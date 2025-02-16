@@ -1,0 +1,10 @@
+{
+    "name": "yourname/project",
+    "description": "A PHP project using Composer",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "."
+        }
+    }
+}
