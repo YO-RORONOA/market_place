@@ -15,4 +15,26 @@ class Field
         $this->model = $model;
         $this->attribute = $attribute;
     }
+
+
+    public function __tostring()
+    {
+        return sprintf(
+            '<div class="form-group">
+        <label>%s</label>
+        <input name="%s" type="text" value="%s" class="form-control%s">
+        <div class= "invalid-feedback">
+            $s
+            </div>
+            </div>
+            
+            ',
+            $this->attribute,
+            $this->attribute,
+            $this->model->{$this->attribute},
+            $this->model->hasError($this->attribute) ?'is-invalid':'',
+            $this->model->getFirstError($this->attribute)
+
+        );
+    }
 }

@@ -1,5 +1,29 @@
 <h1>Register</h1>
 
+
+
+
+
+<?php
+use App\core\form\Form;
+ $form = Form::begin('', "post") ?>
+ 
+    <?php echo $form->field($model,"firstname") ?>
+    <?php echo $form->field($model,"lastname") ?>
+    <?php echo $form->field($model,"email") ?>
+    <?php echo $form->field($model,"password") ?>
+    <?php echo $form->field($model,"confirmPassword") ?>
+
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+<?php Form::end() ?>
+
+
+
+
+
+
+<!-- 
 <form action="" method="POST">
     <div class="form-group">
     <div class="form-group">
@@ -27,4 +51,4 @@
         <label class="form-check-label" for="exampleCheck1">Check me out</label>
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+</form> -->
