@@ -26,7 +26,6 @@ class AuthController extends Controller
             
 
 
-
             if($registerModel->validate() && $registerModel->register())
             {
                 return 'sucess page';
