@@ -43,14 +43,19 @@ abstract class Model
                     $this->addError($attribute,self::RULE_REQUIRED);
 
                 }
-                if($ruleName === self::RULE_MIN && strlen($value) >$rule['min'])
+                if($ruleName === self::RULE_MIN && strlen($value) < $rule['min'])
                 {
-                    $this->addError($attribute,self::RULE_MIN);
+                    $this->addError($attribute,self::RULE_MIN, $rule);
 
                 }
-                if($ruleName === self::RULE_MAX && strlen($value) >$rule['min'])
+                if($ruleName === self::RULE_MAX && strlen($value) > $rule['max'])
                 {
                     $this->addError($attribute,self::RULE_MAX, $rule);
+
+                }
+                if($ruleName === self::RULE_MATCH && $value !== $this->{$rule['match']})
+                {
+                    $this->addError($attribute,self::RULE_MATCH, $rule);
 
                 }
             }
@@ -62,6 +67,10 @@ abstract class Model
 public function addError(string $attribute, string $rule, $params=[])
 {
     $message = $this->errorMessages()[$rule] ?? '';
+    foreach($params as $key =>$value)
+    {
+        $message = str_replace("{{$key}}", $value, $message);
+    }
     $this->errors[$attribute][] = $message;
 }
 
@@ -70,11 +79,21 @@ public function errorMessages()
     return [
     self::RULE_REQUIRED => 'this field is required',
     self::RULE_EMAIL => 'this field must be valid email address',
-    self::RULE_MIN => 'Min length of this field must be {mix}',
+    self::RULE_MIN => 'Min length of this field must be {min}',
     self::RULE_MAX => 'Min length of this field must be {max}',
     self::RULE_MATCH => 'this field must be the same as {match}',
     ];
 
+}
+
+public function hasError($attribute)
+{
+    return $this->errors[$attribute] ?? false;
+}
+
+public function getFirstError($attribute)
+{
+    return $this->errors[$attribute][0] ?? false;
 }
 
 }

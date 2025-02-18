@@ -30,16 +30,13 @@ class AuthController extends Controller
             {
                 return 'sucess page';
             }
-            echo '<pre>';
-            var_dump($registerModel->errors);
-            echo '</pre>';
-            exit;
+           
 
-            // else return $this->render('register', [
-            //     'model' => $registerModel
-            // ]);
+            else return $this->render('register', [
+                'model' => $registerModel
+            ]);
 
-            echo 'handle post register';
+            // echo 'handle post register';
         }
         $this->setLayout('auth');
 
