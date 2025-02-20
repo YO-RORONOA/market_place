@@ -20,14 +20,17 @@ class Application
     public Request $request;
     public Response $response;
     public Controller $controller;
+    public Database $db;
 
-    public function __construct($rootDir)
+
+    public function __construct($rootDir, array $config = [])
     {
         self::$ROOT_DIR = $rootDir;
         self::$app = $this;
         $this->request = new Request();
         $this->response = new Response();
         $this->router = new Router($this->request, $this->response);
+        $this->db = new Database($config['db']);
     }
 
     public function run()
