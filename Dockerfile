@@ -31,3 +31,8 @@ EXPOSE 80
 
 # Start Apache
 CMD ["apache2-foreground"]
+
+# dpendencies for vlucas .env
+
+RUN apt-get update && apt-get install -y zip unzip git \
+    && docker-php-ext-install zip
