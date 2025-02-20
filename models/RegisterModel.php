@@ -7,7 +7,7 @@ use App\core\Model;
 
 class RegisterModel extends Model
 {
-    public string $firstname = '';
+    public string $firstname = ''; //attributes accesed before init
     public string $lastname = '';
     public string $email = '';
     public string $password = '';
