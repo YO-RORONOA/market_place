@@ -20,6 +20,7 @@ class Database
 
     public function applyMigration()
     {
+        $newMmigrations = [];
         $this->createMigratingTable();
         $appliedMigrations = $this->getAppliedMigrations();
 
@@ -30,7 +31,21 @@ class Database
                 continue;
             }
 
+            require_once Application::$ROOT_DIR.'/migrations/'.$migration;
+            $className = pathinfo($migration, PATHINFO_FILENAME);
+            $instance = new $className();
+            $this->log("Alying migration $migration".PHP_EOL);
+            $instance->up();
+            $this->log("Applied $migration".PHP_EOL);
+            $newMmigrations[] = $migration;
 
+    }
+
+    if(!empty($newMmigrations)) {
+        $this->saveMigrations($newMmigrations);
+    }
+    else{
+        $this->log("All migrations are applied");
     }
 
     }
@@ -50,8 +65,22 @@ public function getAppliedMigrations()
             return $statement->fetchAll(\PDO::FETCH_COLUMN);
          }
 
+         public function saveMigrations(array $migrations)
+         {
+            $str = implode(",",array_map(fn($m) => "('$m')", $migrations));
+            
 
+            $statment = $this->pdo->prepare("INSERT INTO migrations (migration) VALUES
+            $str");
+            $statment->execute();
+         }
+
+
+         protected function log($message)
+         {
+            echo '['. date('Y-m-d H:i:s') .'] - '. $message . PHP_EOL;
+         }
 
 }
 
-
+  

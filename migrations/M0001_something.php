@@ -4,7 +4,7 @@
 
 
 
-class M0001_initial
+class M0001_something
 {
     public function up()
     {
