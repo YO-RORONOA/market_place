@@ -2,16 +2,22 @@
 
 namespace App\models;
 
-use App\core\Model;
+use App\core\Dbmodal;
 
 
-class RegisterModel extends Model
+
+class RegisterModel extends Dbmodal
 {
     public string $firstname = ''; //attributes accesed before init
     public string $lastname = '';
     public string $email = '';
     public string $password = '';
     public string $passwordConfirm = '';
+
+    public function tableName(): string
+    {
+        return 'user';
+    }
 
 
     public function register()

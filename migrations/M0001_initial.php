@@ -1,5 +1,7 @@
 <?php
 
+use App\core\Application;
+
 
 
 
@@ -8,7 +10,7 @@ class M0001_initial
 {
     public function up()
     {
-        echo 'applyin migration'.PHP_EOL;
+        Application::$app->db;
     }
 
     public function down()
