@@ -61,6 +61,31 @@ abstract class Repository implements RepositoryInterface
         $statement->execute();
     }
 
+
+    public function create(array $data)
+    {
+        $tableName = $this->table;
+        $attributes = array_intersect_key($data, array_flip($this->fillable));
+        $params = array_map(fn($attr): string => ":attr", array_keys($attributes));
+
+        $sql = "INSERT INTO $tableName (" . implode(',', array_keys($attributes)) . ") 
+        VALUES (" . implode(',', $params) . ")";
+
+        $statement = $this->db->pdo->prepare($sql);
+
+        foreach ($attributes as $key => $value)
+        {
+            $statement->bindValue(":key", $value);
+
+        }
+
+        $statement->execute();
+        return $this->db->pdo->lastInsertId();
+    }
+
+
+    public function 
+
 }
 
 
