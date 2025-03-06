@@ -84,8 +84,33 @@ abstract class Repository implements RepositoryInterface
     }
 
 
-    public function 
+    public function update(int $id, array $data)
+    {
+        $tableName = $this->table;
+        $attributes = array_intersect_key($data, array_flip($this->fillable));
+        $params = array_map(fn($attr) => "$attr = :$attr", array_keys($attributes));
+        
+        $sql = "UPDATE $tableName SET " . implode(',', $params) . " WHERE id = :id";
+        
+        $statement = $this->db->pdo->prepare($sql);
+        $statement->bindValue(":id", $id);
+        
+        foreach ($attributes as $key => $value) {
+            $statement->bindValue(":$key", $value);
 
+    }
+    return $statement->execute();
+    }
+
+
+    public function delete(int $id)
+    {
+        $tableName = $this->table;
+        $statement = $this->db->pdo->prepare("DELETE FROM $tableName WHERE id = :id");
+        $statement->bindValue(":id", $id);
+        
+        return $statement->execute();
+    }
 }
 
 
