@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Core\Middlewares;
+
+use App\core\Application;
 use App\core\middlewares\BaseMiddleware;
-
-
+use ForbiddenException;
 
 class VendorMiddleware extends BaseMiddleware
 {
