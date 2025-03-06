@@ -20,22 +20,32 @@ abstract class Repository implements RepositoryInterface
 
     }
 
-    public function findAll(array $conditions = [])
+    public function findAll(array $conditions = [], bool $withTrashed = false)
     {
         $tableName = $this->table;
         $sql = "SELECT * FROM $tableName";
 
+        $whereCondition = [];
+
+        if(!$withTrashed)
+        {
+            $whereCondition[] = "deleted_at IS NULL";
+        }
+
+
+
         if(!empty($conditions))
         {
-            $sql .= " WHERE ";
-            $whereCondition = [];
-
             foreach($conditions as $key => $value)
             {
                 $whereCondition[] = "$key = :$key";
 
             }
-            $sql .= implode(' AND ', $whereCondition);
+        }
+
+        if(!empty($whereCondition))
+        {
+        $sql .= " WHERE" . implode(' AND ', $whereCondition);
         }
 
 
@@ -53,10 +63,16 @@ abstract class Repository implements RepositoryInterface
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function findOne(int $id)
+    public function findOne(int $id, bool $withTrashed = false)
     {
         $tableName = $this->table;
-        $statement = $this->db->pdo->prepare("SELECT * FROM $tableName WHERE id = :id");
+        $sql = "SELECT * FROM $tableName WHERE id = :id";
+        if(!$withTrashed)
+        {
+            $sql .= "AND deleted_at IS NULL";
+        }
+
+        $statement = $this->db->pdo->prepare($sql);
         $statement->bindValue(":id", $id);
         $statement->execute();
     }
@@ -90,7 +106,7 @@ abstract class Repository implements RepositoryInterface
         $attributes = array_intersect_key($data, array_flip($this->fillable));
         $params = array_map(fn($attr) => "$attr = :$attr", array_keys($attributes));
         
-        $sql = "UPDATE $tableName SET " . implode(',', $params) . " WHERE id = :id";
+        $sql = "UPDATE $tableName SET " . implode(',', $params) . " WHERE id = :id AND deleted_at IS NULL";
         
         $statement = $this->db->pdo->prepare($sql);
         $statement->bindValue(":id", $id);
@@ -106,11 +122,64 @@ abstract class Repository implements RepositoryInterface
     public function delete(int $id)
     {
         $tableName = $this->table;
+        $currentTimestamp = date('d-m-Y, s:i:H');
+        $sql = "UPDATE $tableName SET deleted_at = :deleted_at
+        WHERE id = :id AND deleted_at IS NULL";
+        $statement = $this->db->pdo->prepare($sql);
+        $statement->bindValue(":deleted_at", $currentTimestamp);
+    
+        
+        return $statement->execute();
+    }
+
+
+    public function restore(int $id)
+    {
+        $tableName = $this->table;
+        
+        $sql = "UPDATE $tableName SET deleted_at = NULL 
+                WHERE id = :id AND deleted_at IS NOT NULL";
+        
+        $statement = $this->db->pdo->prepare($sql);
+        $statement->bindValue(":id", $id);
+        
+        return $statement->execute();
+    }
+
+
+    public function forceDelete(int $id)
+    {
+        $tableName = $this->table;
         $statement = $this->db->pdo->prepare("DELETE FROM $tableName WHERE id = :id");
         $statement->bindValue(":id", $id);
         
         return $statement->execute();
     }
+
+    public function onlyTrashed(array $conditions = [])
+    {
+        $tableName = $this->table;
+        $sql = "SELECT * FROM $tableName WHERE deleted_at IS NOT NULL";
+        
+        if (!empty($conditions)) {
+            foreach ($conditions as $key => $value) {
+                $sql .= " AND $key = :$key";
+            }
+        }
+        
+        $statement = $this->db->pdo->prepare($sql);
+        
+        if (!empty($conditions)) {
+            foreach ($conditions as $key => $value) {
+                $statement->bindValue(":$key", $value);
+            }
+        }
+        
+        $statement->execute();
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+
 }
 
 
