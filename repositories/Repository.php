@@ -1,11 +1,8 @@
 <?php
+namespace App\repositories; 
 
 use App\core\Application;
 use App\core\Database;
-use App\repositories\RepositoryInterface;
-
-
-
 
 abstract class Repository implements RepositoryInterface
 {
@@ -13,11 +10,9 @@ abstract class Repository implements RepositoryInterface
     protected string $table;
     protected array $fillable = [];
 
-
     public function __construct()
     {
         $this->db = Application::$app->db;
-
     }
 
     public function findAll(array $conditions = [], bool $withTrashed = false)
@@ -32,22 +27,18 @@ abstract class Repository implements RepositoryInterface
             $whereCondition[] = "deleted_at IS NULL";
         }
 
-
-
         if(!empty($conditions))
         {
             foreach($conditions as $key => $value)
             {
                 $whereCondition[] = "$key = :$key";
-
             }
         }
 
         if(!empty($whereCondition))
         {
-        $sql .= " WHERE" . implode(' AND ', $whereCondition);
+            $sql .= " WHERE " . implode(' AND ', $whereCondition); // Added space after WHERE
         }
-
 
         $statement = $this->db->pdo->prepare($sql);
 
@@ -69,20 +60,21 @@ abstract class Repository implements RepositoryInterface
         $sql = "SELECT * FROM $tableName WHERE id = :id";
         if(!$withTrashed)
         {
-            $sql .= "AND deleted_at IS NULL";
+            $sql .= " AND deleted_at IS NULL"; // Added space before AND
         }
 
         $statement = $this->db->pdo->prepare($sql);
         $statement->bindValue(":id", $id);
         $statement->execute();
+        
+        return $statement->fetch(\PDO::FETCH_ASSOC); // Added return statement
     }
-
 
     public function create(array $data)
     {
         $tableName = $this->table;
         $attributes = array_intersect_key($data, array_flip($this->fillable));
-        $params = array_map(fn($attr): string => ":attr", array_keys($attributes));
+        $params = array_map(fn($attr) => ":$attr", array_keys($attributes)); // Fixed parameter naming
 
         $sql = "INSERT INTO $tableName (" . implode(',', array_keys($attributes)) . ") 
         VALUES (" . implode(',', $params) . ")";
@@ -91,14 +83,12 @@ abstract class Repository implements RepositoryInterface
 
         foreach ($attributes as $key => $value)
         {
-            $statement->bindValue(":key", $value);
-
+            $statement->bindValue(":$key", $value); // Fixed parameter binding
         }
 
         $statement->execute();
         return $this->db->pdo->lastInsertId();
     }
-
 
     public function update(int $id, array $data)
     {
@@ -113,25 +103,23 @@ abstract class Repository implements RepositoryInterface
         
         foreach ($attributes as $key => $value) {
             $statement->bindValue(":$key", $value);
-
+        }
+        return $statement->execute();
     }
-    return $statement->execute();
-    }
-
 
     public function delete(int $id)
     {
         $tableName = $this->table;
-        $currentTimestamp = date('d-m-Y, s:i:H');
+        $currentTimestamp = date('Y-m-d H:i:s'); // Fixed date format for SQL
         $sql = "UPDATE $tableName SET deleted_at = :deleted_at
         WHERE id = :id AND deleted_at IS NULL";
+        
         $statement = $this->db->pdo->prepare($sql);
         $statement->bindValue(":deleted_at", $currentTimestamp);
-    
+        $statement->bindValue(":id", $id); // Added missing id binding
         
         return $statement->execute();
     }
-
 
     public function restore(int $id)
     {
@@ -145,7 +133,6 @@ abstract class Repository implements RepositoryInterface
         
         return $statement->execute();
     }
-
 
     public function forceDelete(int $id)
     {
@@ -178,8 +165,4 @@ abstract class Repository implements RepositoryInterface
         $statement->execute();
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
-
-
 }
-
-
