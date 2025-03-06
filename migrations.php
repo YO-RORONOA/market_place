@@ -25,6 +25,8 @@ $config = [
     
 $app = new Application(__DIR__, $config);
 
+$migrationRunner = new MigrationRunner($app->db, __DIR__.'/migrations');
 
 
-$app->db->applyMigration();
+
+$migrationRunner->applyMigrations();
