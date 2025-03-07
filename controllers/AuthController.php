@@ -34,19 +34,12 @@ class AuthController extends Controller
             {
                 return $this->response->redirect('/login');
             }
-           
 
-            else return $this->render('register', [
-                'model' => $registerModel
-            ]);
-
-            // echo 'handle post register';
+            
         }
         $this->setLayout('auth');
 
-        return $this->render('register', [
-        'model' => $registerModel
-    ]);
+        return $this->render('auth/register', ['model' => $user]);
 
 
     }
