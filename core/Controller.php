@@ -19,6 +19,12 @@ class Controller
     public string $layout = 'main';
     public string $action = '';
     protected array $middlewares = [];
+    protected Response $response;
+
+    public function __construct()
+    {
+        $this->response = Application::$app->response;
+    }
     public function setLayout($layout): void
     {
         $this->layout = $layout;

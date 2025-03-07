@@ -5,10 +5,17 @@ namespace App\controllers;
 use App\core\Controller;
 use App\core\Request;
 use App\models\RegisterModel;
-
+use App\models\User;
+use AuthService;
 
 class AuthController extends Controller
 {
+    private AuthService $authService;
+
+    public function __construct()
+    {
+        $this->authService = new AuthService();
+    }
     public function login()
     {
         $this->setLayout('auth');
@@ -17,18 +24,15 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $registerModel = new RegisterModel();
+        $user = new User();
 
         if($request->isPost())
         {
-            $registerModel->loadData($request->getbody());
+            $user->loadData($request->getbody());
 
-            
-
-
-            if($registerModel->validate() && $registerModel->register())
+            if($this->authService->register($request->getbody()))
             {
-                return 'sucess page';
+                return $this->response->redirect('/login');
             }
            
 
