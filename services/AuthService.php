@@ -2,6 +2,7 @@
 
 use App\core\Application;
 use App\models\User;
+use App\models\UserStatus;
 use App\Repositories\UserRepository;
 use App\Services\EmailService;
 use App\services\TokenService;
@@ -42,7 +43,24 @@ class AuthService
 
     public function verifyEmail(string $token): bool
     {
-        $user = $this->userRepository->findBy
+        $user = $this->userRepository->findByVerificationToken($token);
+
+        if(!$user)
+        {
+            Application::$app->session->setFlash('error', 'Invalid verification token');
+            return false;
+        }
+
+        $user->verification_token = null;
+        $user->email_verified_at = date('Y-m-d H:i:s');
+        $user->status = UserStatus::ACTIVE;
+
+        if ($user->save()) {
+            Application::$app->session->setFlash('success', 'Email verified successfully! You can now log in.');
+            return true;
+        }
+
+        return false;
     }
 
 

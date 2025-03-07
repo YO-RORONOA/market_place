@@ -83,21 +83,5 @@ class UserRepository extends Repository
     }
 
 
-    public findUserIdByPasswordResetToken(string $token)
-    {
-        $expiration = date('Y-m-d H:i:s', strtotime('-1 hour')); // Token expires after 1 hour
-        
-        $sql = "SELECT user_id FROM password_resets 
-                WHERE token = :token AND created_at > :expiration
-                ORDER BY created_at DESC LIMIT 1";
-        
-        $statement = $this->db->pdo->prepare($sql);
-        $statement->bindValue(':token', $token);
-        $statement->bindValue(':expiration', $expiration);
-        $statement->execute();
-        
-        $result = $statement->fetch(\PDO::FETCH_ASSOC);
-        return $result ? $result['user_id'] : null;
-
-
 }
+
