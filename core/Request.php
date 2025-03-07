@@ -1,19 +1,14 @@
 <?php
-/**
- * User: TheCodeholic
- * Date: 7/7/2020
- * Time: 10:23 AM
- */
+
 
 namespace App\core;
 
-
 /**
- * Class Request
- *
- * @author  Zura Sekhniashvili <zurasekhniashvili@gmail.com>
- * @package thecodeholic\mvc
+ * Handles HTTP requests and provides methods to access request data.
+ * Part of the Market core.
  */
+
+
 class Request
 {
     public function getMethod()
@@ -61,5 +56,21 @@ class Request
             }
         }
         return $body;
+    }
+
+    /**
+     * Retrieves the host information from the request.
+     *
+     * @return string The host information.
+     */
+    
+    public function getHostInfo(): string
+    {
+        $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+        $protocol = $isHttps ? 'https' : 'http';
+
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+        
+        return $protocol . '://' . $host;
     }
 }

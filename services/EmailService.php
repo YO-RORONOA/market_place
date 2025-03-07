@@ -3,6 +3,9 @@
 
 namespace App\Services;
 
+use App\core\Application;
+use App\models\User;
+use Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
 class EmailService
@@ -24,12 +27,30 @@ class EmailService
         $this->mailer->isHTML(true);
 
 
-        public 
-
-
-
-
     }
+
+
+    public function sendVerificationEmail(User $user, string $token): bool
+        {
+            try{
+                    $verificationUrl = Application::$app->request->getHostInfo() . '/verify-email?token=' . $token;
+
+                    $this->mailer->addAddress(address: $user->email, name: $user->getDisplayName());
+                    $this->mailer->Subject = 'Verify you email address';
+                    $this->mailer->Body = "
+                    <h1>Welcome to YOUMarket</h1>
+                    <p>Please verify your email address by clicking the link below:</p>
+                    <p><a href=\"{$verificationUrl}\">Verify Email</a></p>
+                    <p>If you did not create an account, you can ignore this email.</p>
+                    ";
+                    return $this->mailer->send();
+            }
+            catch (Exception $e) {
+                Application::$app->session->setFlash('error', 'Could not send verification email: ' . $this->mailer->ErrorInfo);
+                return false;
+            }
+        }
+            
 
 
 }
