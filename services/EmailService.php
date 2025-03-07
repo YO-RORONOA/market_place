@@ -50,6 +50,29 @@ class EmailService
                 return false;
             }
         }
+
+
+        public function sendPasswordResetEmail(User $user, string $token): bool
+        {
+            try
+            {
+                $resetUrl = Application::$app->request->getHostInfo(). '/reset-password?token=' . $token;
+
+                $this->mailer->addAddress($user->email, $user->getDisplayName());
+                $this->mailer->Subject = 'Reset your password';
+                $this->mailer->Body = "
+                    <h1>Password Reset Request</h1>
+                    <p>You requested a password reset. Click the link below to reset your password:</p>
+                    <p><a href=\"{$resetUrl}\">Reset Password</a></p>
+                    <p>If you did not request a password reset, you can ignore this email.</p>
+                ";
+                
+                return $this->mailer->send();
+            } catch (Exception $e) {
+                Application::$app->session->setFlash('error', 'Could not send password reset email: ' . $this->mailer->ErrorInfo);
+                return false;
+            }
+        }
             
 
 
