@@ -2,16 +2,33 @@
 
 namespace App\core;
 
+use App\core\Application;
 use app\core\Model;
 
+
+/**
+ * Class Dbmodal
+ *
+ * This class handles database operations and interactions.
+ * It provides methods to connect to the database, execute queries,
+ * and manage transactions.
+ *
+ * @package Market\Core\Dbmodal
+ */
 
 
 abstract class Dbmodal extends Model
 {
     abstract public function tableName(): string;
     abstract public function attributes(): array;
+    
 
-
+    /**
+     * Save the current state of the object to the database.
+     *
+     * @return bool Returns true on success, false on failure.
+     */
+ 
     public function save()
     {
         $tableName = $this->tableName();
