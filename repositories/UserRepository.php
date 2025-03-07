@@ -40,4 +40,34 @@ class UserRepository extends Repository
     }
 
 
+    public function findUserIdByPasswordResetToken(string $token)
+    {
+        $expiration = date('Y-m-d H:i:s', strtotime('-1 hour'));
+
+        $sql = "SELECT user_id FROM password_resets
+        WHERE token = :token AND created_at > :expiration
+        ORDER BY created_at DESC LIMIT 1";
+
+
+        $statement = $this->db->pdo->prepare($sql);
+        $statement->bindValue(':token', $token);
+        $statement->bindValue(':expiration', $expiration);
+        $statement->execute();
+
+        $result = $statement->fetch(\PDO::FETCH_ASSOC);
+        return $result ? $result['user_id'] : null;
+    }
+
+
+    public function removePasswordResetToken(string $token): bool
+    {
+        $sql = "DELETE FROM password_resets WHERE token = :token";
+        $statement = $this->db->pdo->prepare($sql);
+        $statement->bindValue(':token', $token);
+        
+        return $statement->execute();
+    }
+    
+
+
 }
