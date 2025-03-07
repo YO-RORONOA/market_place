@@ -8,6 +8,13 @@ use App\models\User;
 use Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 
+
+/**
+ * EmailService class handles sending and managing emails.
+ * Provides methods for composing, sending, and logging emails.
+ * Utilizes external email providers for delivery. 
+ * @package Market\Services
+ */
 class EmailService
 {
     private PHPMailer $mailer;
