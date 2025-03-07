@@ -5,7 +5,16 @@ namespace App\models;
 use App\core\Dbmodal;
 
 
-
+/**
+ * Class User
+ *
+ * This class represents a user in the market system.
+ * It includes properties and methods for managing user data.
+ * The User class interacts with the database to perform CRUD operations.
+ * 
+ * @package Market\Models
+ */
+ 
 class User extends Dbmodal
 {
     public string $firstname = ''; //attributes accesed before init
