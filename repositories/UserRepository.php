@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\models\User;
+use App\repositories;
 
 
 class UserRepository extends Repository
@@ -19,6 +20,19 @@ class UserRepository extends Repository
             return null;
         }
 
+        $user = new User();
+        $user->loadData($result[0]);
+        return $user;
+    }
+
+    public function findByVerificationToken(string $token)
+    {
+        $result = $this->findAll(['verification_token' => $token]);
+        
+        if (empty($result)) {
+            return null;
+        }
+        
         $user = new User();
         $user->loadData($result[0]);
         return $user;
@@ -67,7 +81,23 @@ class UserRepository extends Repository
         
         return $statement->execute();
     }
-    
+
+
+    public findUserIdByPasswordResetToken(string $token)
+    {
+        $expiration = date('Y-m-d H:i:s', strtotime('-1 hour')); // Token expires after 1 hour
+        
+        $sql = "SELECT user_id FROM password_resets 
+                WHERE token = :token AND created_at > :expiration
+                ORDER BY created_at DESC LIMIT 1";
+        
+        $statement = $this->db->pdo->prepare($sql);
+        $statement->bindValue(':token', $token);
+        $statement->bindValue(':expiration', $expiration);
+        $statement->execute();
+        
+        $result = $statement->fetch(\PDO::FETCH_ASSOC);
+        return $result ? $result['user_id'] : null;
 
 
 }

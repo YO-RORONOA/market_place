@@ -10,6 +10,6 @@ interface RepositoryInterface
     public function update(int $id, array $data);
     public function delete(int $id); 
     public function restore(int $id);
-    public function forceDelte(int $id);
+    public function forceDelete(int $id);
 
 }
