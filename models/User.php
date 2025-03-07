@@ -63,7 +63,17 @@ class User extends Dbmodal
 
     public function isActive(): bool
     {
-        return $this->status === UserStatus::ACTIVE
+        return $this->status === UserStatus::ACTIVE;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === UserStatus::PENDING;
+    }
+
+    public function isEmailVerified(): bool
+    {
+        return $this->email_verified_at !== null;
     }
 
 }

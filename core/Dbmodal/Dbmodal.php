@@ -44,6 +44,7 @@ abstract class Dbmodal extends Model
         return true;
 
     }
+    
 
     public function prepare($sql)
     {
