@@ -88,7 +88,7 @@ class AuthService
         }
 
         Application::$app->session->set('user',[
-            // 'id' => $user->id, check for id if needed
+            'id' => $user->id, 
             'name' => $user->getDisplayName(),
             'email' => $user->email,
             'role_id' => $user->role_id
@@ -127,22 +127,34 @@ class AuthService
     public function resetPassword(string $token, string $password): bool
     {
         $userId = $this->userRepository->findUserIdByPasswordResetToken($token);
-
+    
         if (!$userId) {
             Application::$app->session->setFlash('error', 'Invalid or expired password reset token.');
             return false;
         }
-        $user = $this->userRepository->findOne($userId);
+        
+        $userData = $this->userRepository->findOne($userId);
+        
+        if (!$userData) {
+            return false;
+        }
+        
+        $user = new User();
+        $user->loadData($userData);
+        
         $user->password = $password;
-
-        if ($user->validate(['password']) && $user->save()) {
-            
+        
+       
+        
+        if ($this->userRepository->update($userId, [
+            'password' => password_hash($password, PASSWORD_DEFAULT)
+        ])) {
             $this->userRepository->removePasswordResetToken($token);
-
+            
             Application::$app->session->setFlash('success', 'Password reset successful! You can now log in with your new password.');
             return true;
         }
-
+        
         return false;
     }
 }

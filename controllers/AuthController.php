@@ -110,7 +110,7 @@ class AuthController extends Controller
         
         if (empty($token) || !$this->authService->verifyEmail($token)) {
             Application::$app->session->setFlash('error', 'Invalid or expired verification token.');
-            Application::$app->response->redirect('/invalid-token');
+            Application::$app->response->redirect('/InvalidToken');
             return;
         }
         
@@ -186,7 +186,7 @@ class AuthController extends Controller
         
         if (empty($token)) {
             Application::$app->session->setFlash('error', 'Invalid password reset token.');
-            Application::$app->response->redirect('/invalid-token');
+            Application::$app->response->redirect('/InvalidToken');
             return;
         }
         
@@ -197,7 +197,7 @@ class AuthController extends Controller
             
             if ($model->validate() && $this->authService->resetPassword($token, $model->password)) {
                 Application::$app->session->setFlash('success', 'Your password has been reset successfully!');
-                return $this->render('auth/password-reset-success', [
+                return $this->render('auth/PasswordresetSuccess', [
                     'title' => 'Password Reset Complete'
                 ]);
             }
@@ -215,7 +215,7 @@ class AuthController extends Controller
      */
     public function invalidToken()
     {
-        return $this->render('auth/invalid-token', [
+        return $this->render('auth/InvalidToken', [
             'title' => 'Invalid Token'
         ]);
     }
