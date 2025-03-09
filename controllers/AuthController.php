@@ -93,6 +93,13 @@ class AuthController extends Controller
             'title' => 'Verify Your Email'
         ]);
     }
+
+    public function VerificationSuccess()
+    {
+        return $this->render('auth/VerificationSuccess');
+    }
+
+   
     
     /**
      * Handle email verification token
@@ -108,7 +115,7 @@ class AuthController extends Controller
         }
         
         Application::$app->session->setFlash('success', 'Your email has been verified successfully!');
-        return $this->render('auth/verification-success', [
+        return $this->render('auth/verificationSuccess', [
             'title' => 'Email Verified'
         ]);
     }
@@ -147,7 +154,7 @@ class AuthController extends Controller
             if (!empty($email)) {
                 $this->authService->requestPasswordReset($email);
                 Application::$app->session->setFlash('success', 'If your email exists in our system, you will receive a password reset link shortly.');
-                Application::$app->response->redirect('/password-reset-sent');
+                Application::$app->response->redirect('/passwordResetSent');
                 return;
             } else {
                 $model->addError('email', 'Email is required');
@@ -165,7 +172,7 @@ class AuthController extends Controller
      */
     public function passwordResetSent()
     {
-        return $this->render('auth/password-reset-sent', [
+        return $this->render('auth/passwordResetSent', [
             'title' => 'Reset Link Sent'
         ]);
     }
@@ -196,7 +203,7 @@ class AuthController extends Controller
             }
         }
         
-        return $this->render('auth/reset-password', [
+        return $this->render('auth/ResetPassword', [
             'model' => $model,
             'token' => $token,
             'title' => 'Create New Password'

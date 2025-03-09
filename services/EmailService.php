@@ -63,7 +63,7 @@ class EmailService
         {
             try
             {
-                $resetUrl = Application::$app->request->getHostInfo(). '/reset-password?token=' . $token;
+                $resetUrl = Application::$app->request->getHostInfo(). '/ResetPassword?token=' . $token;
 
                 $this->mailer->addAddress($user->email, $user->getDisplayName());
                 $this->mailer->Subject = 'Reset your password';

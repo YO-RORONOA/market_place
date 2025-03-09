@@ -62,6 +62,9 @@ $app->router->get('/resend-verification', [AuthController::class, 'emailVerifica
 
 $app->router->get('/logout', [AuthController::class, 'logout']);
 $app->router->get('/invalid-token', [AuthController::class, 'invalidToken']);
+$app->router->get('/passwordResetSent', [AuthController::class, 'passwordResetSent']);
+
+
 
 
 $app->run();
