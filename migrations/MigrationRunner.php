@@ -1,5 +1,7 @@
 <?php
 
+namespace App\migrations;
+
 use App\core\Database;
 
 

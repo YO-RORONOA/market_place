@@ -2,11 +2,13 @@
 
 namespace App\controllers;
 
+use App\core\Application;
 use App\core\Controller;
 use App\core\Request;
 use App\models\RegisterModel;
 use App\models\User;
-use AuthService;
+use App\Services\AuthService;
+
 
 class AuthController extends Controller
 {
@@ -32,7 +34,7 @@ class AuthController extends Controller
 
             if($this->authService->register($request->getbody()))
             {
-                return $this->response->redirect('/login');
+                return Application::$app->response->redirect('/login');
             }
 
             

@@ -34,4 +34,9 @@ $app->router->get('/register', [AuthController::class, 'register']);
 $app->router->post('/register', [AuthController::class, 'register']);
 
 
+$app->router->get('/register', [AuthController::class, 'register']);
+$app->router->post('/register', [AuthController::class, 'register']);
+$app->router->get('/verify-email', [AuthController::class, 'verifyEmail']);
+
+
 $app->run();

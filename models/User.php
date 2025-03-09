@@ -2,7 +2,11 @@
 
 namespace App\models;
 
-use App\core\Dbmodal;
+use App\core\Dbmodal\Dbmodal;
+
+
+
+// use App\core\Dbmodal;
 
 
 /**

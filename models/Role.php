@@ -3,7 +3,9 @@
 
 namespace App\models;
 
-use App\core\Dbmodal;
+use App\core\Dbmodal\Dbmodal;
+
+
 
 
 class Role extends Dbmodal

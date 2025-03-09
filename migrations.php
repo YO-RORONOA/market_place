@@ -8,6 +8,7 @@
  use App\controllers\SiteController;
  use App\core\Application;
  use App\controllers\AuthController;
+ use App\migrations\MigrationRunner;
 
 require_once __DIR__.'/vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);

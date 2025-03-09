@@ -1,6 +1,6 @@
 <?php
 
-namespace App\core\migrations;
+namespace App\migrations;
 
 
 abstract class Migration

@@ -1,4 +1,11 @@
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+# Skip rewrite for existing files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Skip rewrite for asset directories
+RewriteRule ^(assets|css|js|images)/ - [L]
+
+# Forward all other requests to index.php
 RewriteRule ^ index.php [QSA,L]

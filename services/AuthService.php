@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Services;
+
 use App\core\Application;
 use App\models\User;
 use App\models\UserStatus;

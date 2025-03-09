@@ -1,7 +1,7 @@
 <?php
 
 use App\core\Application;
-use App\core\migrations\Migration;
+use App\migrations\Migration;
 
 
 class M0001_create_users_table extends Migration

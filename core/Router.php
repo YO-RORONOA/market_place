@@ -39,6 +39,15 @@ class Router
         $method = $this->request->getMethod();
         $url = $this->request->getUrl();
         $callback = $this->routeMap[$method][$url] ?? false;
+
+
+        $fileExtension = pathinfo($url, PATHINFO_EXTENSION);
+        $staticExtensions = ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'ico'];
+        
+        if (in_array(strtolower($fileExtension), $staticExtensions)) {
+            return false;
+        }
+
         if (!$callback) {
             $this->response->statusCode(code: 404);
             // return 'Not Found';

@@ -8,9 +8,10 @@ use App\core\Model;
 
 class Form
 {
-    public static function begin($action, $method)
+    public static function begin($action, $method, $options = [])
     {
-        echo sprintf('<form action="%s" method="%s">', $action, $method);
+        $class = $options['class'] ?? '';
+        echo sprintf('<form action="%s" method="%s" class="%s">', $action, $method, $class);
         return new Form();
     }
 
