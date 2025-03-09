@@ -88,7 +88,7 @@ class AuthService
         }
 
         Application::$app->session->set('user',[
-            'id' => $user->id,
+            // 'id' => $user->id, check for id if needed
             'name' => $user->getDisplayName(),
             'email' => $user->email,
             'role_id' => $user->role_id
@@ -97,8 +97,58 @@ class AuthService
     }
 
 
+    public function logout(): void
+    {
+        Application::$app->session->remove('user');
+    }
+
+    public function requestPasswordreset(string $email): bool
+    {
+        $user = $this->userRepository->findByEmail($email);
+
+        if(!$user)
+        {
+            Application::$app->session->setFlash('error', 'If your email exists in our system, you will receive a password reset link.');
+            return false;
+        }
+        $token = $this->tokenService->generatePasswordRestToken();
+
+        $this->userRepository->savePasswordResetToken($user->id, $token);
+
+        $this->emailService->sendPasswordResetEmail($user, $token);
+        
+        Application::$app->session->setFlash('success', 'Password reset link sent to your email.');
+        return true;
+
+        
+    }
+
+
+    public function resetPassword(string $token, string $password): bool
+    {
+        $userId = $this->userRepository->findUserIdByPasswordResetToken($token);
+
+        if (!$userId) {
+            Application::$app->session->setFlash('error', 'Invalid or expired password reset token.');
+            return false;
+        }
+        $user = $this->userRepository->findOne($userId);
+        $user->password = $password;
+
+        if ($user->validate(['password']) && $user->save()) {
+            
+            $this->userRepository->removePasswordResetToken($token);
+
+            Application::$app->session->setFlash('success', 'Password reset successful! You can now log in with your new password.');
+            return true;
+        }
+
+        return false;
+    }
+}
+    
     
 
 
 
-}
+
