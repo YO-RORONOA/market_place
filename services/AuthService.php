@@ -66,5 +66,39 @@ class AuthService
     }
 
 
+    public function login(string $email, string $password): bool
+    {
+        $user = $this->userRepository->findByEmail($email);
+
+        if(!$user || !password_verify($password, $user->password))
+        {
+            Application::$app->session->setFlash('error', 'Invalid email or password.');
+            return false;
+        }
+
+        if(!$user->isEmailVerified())
+        {
+            Application::$app->session->setFlash('error', 'Please verify your email before logging in.');
+            return false;
+        }
+
+        if (!$user->isActive()) {
+            Application::$app->session->setFlash('error', 'Your account is not active.');
+            return false;
+        }
+
+        Application::$app->session->set('user',[
+            'id' => $user->id,
+            'name' => $user->getDisplayName(),
+            'email' => $user->email,
+            'role_id' => $user->role_id
+        ]);
+        return true;
+    }
+
+
+    
+
+
 
 }

@@ -13,8 +13,6 @@ class Field
     public Model $model;
     public string $attribute;
     public string $type;
-    private array $attributes = [];
-    private bool $fieldOnly = false;
 
     public function __construct(Model $model, string $attribute)
     {
@@ -25,15 +23,11 @@ class Field
 
     public function __toString()
     {
-        if ($this->fieldOnly) {
-            return $this->renderInputOnly();
-        }
-        
         return sprintf(
-            '<div class="form-group">
-                <label>%s</label>
-                <input name="%s" type="%s" value="%s" class="form-control%s" %s>
-                <div class="invalid-feedback">
+            '<div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">%s</label>
+                <input name="%s" type="%s" value="%s" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-accent-teal focus:border-accent-teal %s">
+                <div class="text-red-500 mt-1 text-sm">
                     %s
                 </div>
             </div>',
@@ -41,30 +35,9 @@ class Field
             $this->attribute,
             $this->type,
             $this->model->{$this->attribute},
-            $this->model->hasError($this->attribute) ? ' is-invalid' : '',
-            $this->getAttributesString(),
+            $this->model->hasError($this->attribute) ? 'border-red-500' : '',
             $this->model->getFirstError($this->attribute)
         );
-    }
-
-    private function renderInputOnly()
-    {
-        return sprintf(
-            '<input name="%s" type="%s" value="%s" %s>',
-            $this->attribute,
-            $this->type,
-            $this->model->{$this->attribute},
-            $this->getAttributesString()
-        );
-    }
-
-    private function getAttributesString(): string
-    {
-        $attributesString = '';
-        foreach ($this->attributes as $key => $value) {
-            $attributesString .= "$key=\"$value\" ";
-        }
-        return $attributesString;
     }
 
     public function passwordField()
@@ -76,18 +49,6 @@ class Field
     public function numberField()
     {
         $this->type = self::TYPE_NUMBER;
-        return $this;
-    }
-
-    public function fieldOnly()
-    {
-        $this->fieldOnly = true;
-        return $this;
-    }
-
-    public function addAttributes(array $attributes)
-    {
-        $this->attributes = array_merge($this->attributes, $attributes);
         return $this;
     }
 }

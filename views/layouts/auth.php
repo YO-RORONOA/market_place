@@ -84,7 +84,6 @@
             </div>
         <?php endif; ?>
         
-        
         {{content}}
     </main>
 
