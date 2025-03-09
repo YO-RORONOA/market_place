@@ -35,13 +35,13 @@ class User extends Dbmodal
 
     public function tableName(): string
     {
-        return 'user';
+        return 'users';
     }
 
     public function attributes(): array
     {
         return['firstname', 'lastname', 'email', 'password',
-         'role_id', 'status', 'verification_token'];
+         'role_id', 'status', 'verification_token', 'email_verified_at'];
     }
 
 
@@ -69,7 +69,10 @@ class User extends Dbmodal
         $this->password = password_hash($this->password, PASSWORD_DEFAULT);
         return parent::save();
     }
-
+    public function update()
+    {
+        return parent::update();
+    }
     public function getDisplayName(): string
     {
         return $this->firstname . ' ' . $this->lastname;

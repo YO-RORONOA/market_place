@@ -3,6 +3,7 @@
 namespace App\migrations;
 
 use App\core\Database;
+use App\migrations;
 
 
 

@@ -38,5 +38,30 @@ $app->router->get('/register', [AuthController::class, 'register']);
 $app->router->post('/register', [AuthController::class, 'register']);
 $app->router->get('/verify-email', [AuthController::class, 'verifyEmail']);
 
+$app->router->get('/login', [AuthController::class, 'login']);
+$app->router->post('/login', [AuthController::class, 'login']);
+$app->router->get('/logout', [AuthController::class, 'logout']);
+$app->router->get('/verify-email', [AuthController::class, 'verifyEmail']);
+
+$app->router->get('/forgot-password', [AuthController::class, 'forgotPassword']);
+$app->router->post('/forgot-password', [AuthController::class, 'forgotPassword']);
+$app->router->get('/password-reset-sent', [AuthController::class, 'passwordResetSent']);
+$app->router->get('/ResetPassword', [AuthController::class, 'resetPassword']);
+$app->router->post('/ResetPassword', [AuthController::class, 'resetPassword']);
+
+
+
+
+
+
+$app->router->get('/email-verification', [AuthController::class, 'emailVerificationPage']);
+$app->router->get('/verify-email', [AuthController::class, 'verifyEmail']);
+$app->router->post('/resend-verification', [AuthController::class, 'resendVerification']);
+$app->router->get('/resend-verification', [AuthController::class, 'emailVerificationPage']);
+
+
+$app->router->get('/logout', [AuthController::class, 'logout']);
+$app->router->get('/invalid-token', [AuthController::class, 'invalidToken']);
+
 
 $app->run();

@@ -1,9 +1,4 @@
 <?php
-/**
- * User: TheCodeholic
- * Date: 7/7/2020
- * Time: 9:57 AM
- */
 
  use App\controllers\SiteController;
  use App\core\Application;

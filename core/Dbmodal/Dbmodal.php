@@ -44,7 +44,28 @@ abstract class Dbmodal extends Model
     return true;
 
     }
-    
+
+    public function update()
+    {
+        $tableName = $this->tableName();
+        $attributes = $this->attributes();
+        $params = array_map(fn($attr) => "$attr = :$attr", $attributes);
+
+        $sql = "UPDATE $tableName SET " . implode(',', $params) . " 
+            WHERE id = :id";
+
+        $statement = self::prepare($sql);
+
+        foreach ($attributes as $attribute) {
+            $statement->bindValue(":$attribute", $this->{$attribute});
+        }
+
+        $statement->bindValue(":id", $this->id);
+        $statement->execute();
+
+        return true;
+    }
+
 
     public function prepare($sql)
     {

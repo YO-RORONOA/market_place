@@ -57,7 +57,7 @@ class AuthService
         $user->email_verified_at = date('Y-m-d H:i:s');
         $user->status = UserStatus::ACTIVE;
 
-        if ($user->save()) {
+        if ($user->update()) {
             Application::$app->session->setFlash('success', 'Email verified successfully! You can now log in.');
             return true;
         }
