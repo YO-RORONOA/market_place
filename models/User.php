@@ -21,6 +21,7 @@ use App\core\Dbmodal\Dbmodal;
  
 class User extends Dbmodal
 {
+    public ?int $id = null;
     public string $firstname = ''; //attributes accesed before init
     public string $lastname = '';
     public string $email = '';

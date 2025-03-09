@@ -58,6 +58,20 @@ class Request
         return $body;
     }
 
+    public function getQuery(string $key = null)
+    {
+        $queryParams = [];
+        
+        $queryString = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY) ?? '';
+        parse_str($queryString, $queryParams);
+        
+        if ($key !== null) {
+            return $queryParams[$key] ?? null;
+        }
+        
+        return $queryParams;
+    }
+
     /**
      * Retrieves the host information from the request.
      *
