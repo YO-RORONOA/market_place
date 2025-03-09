@@ -3,6 +3,7 @@
 namespace App\controllers;
 
 use App\core\Controller;
+use App\core\middlewares\GuestMiddleware;
 use App\core\Request;
 use App\core\Application;
 use App\models\User;
@@ -22,6 +23,9 @@ class AuthController extends Controller
         $this->setLayout('auth');
         $this->authService = new AuthService();
         $this->emailService = new EmailService();
+        $this->registerMiddleware(new GuestMiddleware([
+            'login', 'register', 'forgotPassword', 'resetPassword', 
+            'emailVerificationPage', 'passwordResetSent']));
     }
     
     /**
