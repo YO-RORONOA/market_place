@@ -19,8 +19,8 @@ use App\core\form\Form;
                 </div>
                 
                 <?php echo $form->field($model, 'email'); ?>
-                
                 <?php echo $form->field($model, 'password')->passwordField(); ?>
+                
                 <p class="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
                 
                 <?php echo $form->field($model, 'passwordConfirm')->passwordField(); ?>

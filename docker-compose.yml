@@ -1,9 +1,9 @@
-
+version: '3.7'
 
 services:
   app:
     build: .
-    container_name: php_app
+    container_name: php_server
     ports:
       - "8080:80"
     volumes:
@@ -15,7 +15,7 @@ services:
     image: postgres:latest
     env_file:
       - .env
-    container_name: postgres_db
+    container_name: postgres_database
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
