@@ -1,4 +1,5 @@
 <?php
+namespace App\models;
 
 use App\core\Dbmodal\Dbmodal;
 
@@ -17,7 +18,7 @@ class Product extends Dbmodal
 
     public function tableName(): string
     {
-        return 'product';
+        return 'products';
     }
 
     public function attributes(): array
