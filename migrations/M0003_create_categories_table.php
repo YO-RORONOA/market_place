@@ -5,7 +5,7 @@ use App\migrations\Migration;
 
 
 
-class M0002_create_categories_table extends Migration
+class M0003_create_categories_table extends Migration
 {
 
     public function up(): void
@@ -24,11 +24,10 @@ class M0002_create_categories_table extends Migration
 
         $db->pdo->exec($sql);
 
-        $sql = "INSERT INTO,categories (name) VALUES
+        $sql = "INSERT INTO categories (name) VALUES
         ('Electronics'),
         ('clothing'),
         ('Home & Garden'),
-        ('Electronics'),
         ('Books'),
         ('Beauty & Health')";
         

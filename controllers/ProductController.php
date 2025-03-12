@@ -1,5 +1,8 @@
 <?php
 
+namespace App\controllers;
+
+
 use App\core\Application;
 use App\core\Controller;
 use App\core\Request;

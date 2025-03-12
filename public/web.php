@@ -66,5 +66,8 @@ $app->router->get('/passwordResetSent', [AuthController::class, 'passwordResetSe
 
 
 
+$app->router->get('/products', [App\controllers\ProductController::class, 'index']);
+$app->router->get('/products/view', [App\controllers\ProductController::class, 'view']);
+
 
 $app->run();
