@@ -1,5 +1,6 @@
 <?php
 
+use App\core\Application;
 use App\core\Controller;
 use App\core\Request;
 use App\repositories\CategoryRepository;
@@ -61,8 +62,34 @@ class ProductController extends Controller
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalProducts' => $totalProducts,
-            // ...$params
-        ])
+            ...$params  // spread operator: Dynamically merge additional parameters
+                        // like 'category' or 'search' if they exist
 
+        ]);
+
+    }
+
+    public function view(Request $request)
+    {
+        $id = $request->getQuery('id');
+        
+        if (!$id) {
+            Application::$app->response->redirect('/products');
+            return;
+        }
+        
+        $product = $this->productRepository->findOne($id);
+        
+        if (!$product) {
+            Application::$app->response->statusCode(404);
+            return $this->render('_error', ['message' => 'Product not found']);
+        }
+        
+        $relatedProducts = $this->productRepository->findByCategory($product['category_id'], 4);
+        
+        return $this->render('products/view', [
+            'product' => $product,
+            'relatedProducts' => $relatedProducts
+        ]);
     }
 }
