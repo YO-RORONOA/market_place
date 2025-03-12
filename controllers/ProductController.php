@@ -34,7 +34,35 @@ class ProductController extends Controller
         if($categoryId)
         {
             $products = $this->productRepository->findByCategory($categoryId, $limit, $offset);
+            $totalProducts = $this->productRepository->countProducts(['category_id' => $categoryId, 'status' => 'active']);
+            $category = $this->categoryRepository->findOne($categoryId);
+            $params['category'] = $category;
         }
+        elseif($search)
+        {
+            $products = $this->productRepository->search($search, $limit, $offset);
+            $totalProducts = count($this->productRepository->search($search, 100, 0));
+            $params['search'] = $search;
+        }
+        else{
+            $products = $this->productRepository->findAll(['status' => 'active'], false, 'created_at DESC', $limit, $offset);
+            $totalProducts = $this->productRepository->countProducts(['status' => 'active']);
+
+        }
+
+        $totalPages = ceil($totalProducts/ $limit);
+
+        $categories = $this->categoryRepository->getMainCategories();
+
+        return $this->render('products/index', 
+        [
+            'products' => $products,
+            'categories' => $categories,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalProducts' => $totalProducts,
+            // ...$params
+        ])
 
     }
 }
