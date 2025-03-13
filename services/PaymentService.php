@@ -70,9 +70,52 @@ class PaymentService
             Application::$app->session->setFlash('error', 'Payment Error: ' . $e->getMessage());
             throw new \Exception('Failed to create checkout session: ' . $e->getMessage());
         }
-        
-
 
     }
 
+        public function handleWebhook(string $payload, string $sigHeader): bool
+        {
+            try {
+                $event = \Stripe\Webhook::constructEvent(
+                    $payload, $sigHeader, $this->webhookSecret
+                );
+                
+                switch ($event->type) {
+                    case 'checkout.session.completed':
+                        return $this->handleCheckoutSessionCompleted($event->data->object);
+                    
+                    case 'payment_intent.succeeded':
+                        // Payment was successful
+                        return $this->handlePaymentIntentSucceeded($event->data->object);
+                    
+                    case 'payment_intent.payment_failed':
+                        // Payment failed
+                        return $this->handlePaymentIntentFailed($event->data->object);
+                    
+                    
+                    default:
+                        // Unexpected event type
+                        return true;
+                }
+            } catch (\UnexpectedValueException $e) {
+                // Invalid payload
+                Application::$app->session->setFlash('error', 'Webhook Error: ' . $e->getMessage());
+                return false;
+            } catch (\Stripe\Exception\SignatureVerificationException $e) {
+                // Invalid signature
+                Application::$app->session->setFlash('error', 'Webhook Error: ' . $e->getMessage());
+                return false;
+            }
+        }
+
+        private function handlePaymentIntentSucceeded($paymentIntent): bool
+        {
+            $orderService = new OrderService();
+            return $orderService->updateOrderStatus($paymentIntent->id, 'paid');
+        }
+        private function handlePaymentIntentFailed($paymentIntent): bool
+    {
+        $orderService = new OrderService();
+        return $orderService->updateOrderStatus($paymentIntent->id, 'failed');
+    }
 }
