@@ -18,7 +18,8 @@ class CartService
     
     public function getCart(): mixed   
     {
-        return Application::$app->session->get(self::CART_SESSION_KEY) ?? [];
+        $cart = Application::$app->session->get(self::CART_SESSION_KEY);
+        return is_array($cart) ? $cart : [];
     }
     
     public function addItem(int $productId, int $quantity = 1): bool

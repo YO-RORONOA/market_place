@@ -1,181 +1,109 @@
-<?php $title = isset($category) ? $category['name'] : (isset($search) ? "Search: $search" : "All Products"); ?>
+<?php $title = 'Shopping Cart'; ?>
 
-<!-- Hero Banner for Ads -->
-<div class="mb-8 bg-gradient-to-r from-accent-terracotta via-accent-ochre to-accent-teal rounded-lg shadow-md overflow-hidden">
-    <div class="py-6 px-8 text-white relative">
-        <div class="absolute top-2 right-2 text-xs px-2 py-1 bg-white text-accent-navy rounded-full">Ad</div>
-        <h2 class="text-2xl font-bold mb-2">Discover Amazing Deals</h2>
-        <p class="mb-4 max-w-lg">Shop our exclusive collection with special discounts for a limited time only!</p>
-        <a href="#" class="inline-block px-6 py-2 bg-white text-accent-navy font-medium rounded-md hover:bg-gray-100 transition">
-            Shop Now
-        </a>
-    </div>
-</div>
-
-<div class="flex flex-col lg:flex-row lg:space-x-8">
-    <!-- Main Content (Product Grid) -->
-    <div class="w-full lg:w-3/4">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-accent-navy mb-2">
-                <?= $title ?>
-            </h1>
-            
-            <?php if (isset($category)): ?>
-                <p class="text-gray-600"><?= htmlspecialchars($category['description'] ?? '') ?></p>
-            <?php endif; ?>
-            
-            <div class="mt-4">
-                <form action="/products" method="get" class="flex">
-                    <input 
-                        type="text" 
-                        name="search" 
-                        value="<?= isset($search) ? htmlspecialchars($search) : '' ?>"
-                        placeholder="Search products..." 
-                        class="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-accent-teal focus:border-accent-teal"
-                    >
-                    <button type="submit" class="px-4 py-2 bg-accent-teal text-white rounded-r-md hover:bg-accent-navy transition">
-                        Search
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <?php if (empty($products)): ?>
-            <div class="bg-white rounded-lg shadow-sm p-8 text-center">
-                <p class="text-gray-600 mb-4">No products found.</p>
-                <a href="/products" class="text-accent-teal hover:underline">View all products</a>
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="p-6 md:p-8">
+        <h1 class="text-3xl font-bold text-accent-navy mb-8">Shopping Cart</h1>
+        
+        <?php if (empty($cartItems)): ?>
+            <div class="text-center py-8">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p class="text-gray-600 mb-6">Your cart is empty</p>
+                <a href="/products" class="inline-block py-2 px-6 bg-accent-ochre text-white font-medium rounded-md hover:bg-accent-terracotta transition">
+                    Start Shopping
+                </a>
             </div>
         <?php else: ?>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <?php 
-                $productCount = 0;
-                foreach ($products as $product): 
-                    $productCount++;
-                ?>
-                <div class="bg-white rounded-lg shadow-sm overflow-hidden transition transform hover:shadow-md hover:-translate-y-1">
-                    <a href="/products/view?id=<?= $product['id'] ?>">
-                        <div class="h-48 overflow-hidden">
-                            <?php if ($product['image_path']): ?>
-                                <img 
-                                    src="<?= htmlspecialchars($product['image_path']) ?>" 
-                                    alt="<?= htmlspecialchars($product['name']) ?>" 
-                                    class="w-full h-full object-cover"
-                                >
-                            <?php else: ?>
-                                <div class="w-full h-full flex items-center justify-center bg-gray-200">
-                                    <span class="text-gray-400">No image</span>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left py-4 px-2">Product</th>
+                            <th class="text-center py-4 px-2">Price</th>
+                            <th class="text-center py-4 px-2">Quantity</th>
+                            <th class="text-right py-4 px-2">Total</th>
+                            <th class="text-right py-4 px-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($cartItems as $item): ?>
+                        <tr class="border-b">
+                            <td class="py-4 px-2">
+                                <div class="flex items-center">
+                                    <div class="w-16 h-16 flex-shrink-0 mr-4 bg-gray-100 rounded overflow-hidden">
+                                        <?php if ($item->image_path): ?>
+                                            <img src="<?= htmlspecialchars($item->image_path) ?>" alt="<?= htmlspecialchars($item->name) ?>" class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                            <div class="w-full h-full flex items-center justify-center">
+                                                <span class="text-gray-400 text-xs">No image</span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div>
+                                        <a href="/products/view?id=<?= $item->product_id ?>" class="text-accent-navy hover:text-accent-teal font-medium">
+                                            <?= htmlspecialchars($item->name) ?>
+                                        </a>
+                                    </div>
                                 </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="p-4">
-                            <h3 class="font-semibold text-lg mb-1 text-accent-navy"><?= htmlspecialchars($product['name']) ?></h3>
-                            <p class="text-accent-terracotta font-bold"><?= number_format($product['price'], 2) ?> MAD</p>
-                            <p class="text-gray-600 text-sm mt-2 line-clamp-2"><?= htmlspecialchars($product['description']) ?></p>
-                        </div>
-                    </a>
-                    
-                    <div class="px-4 pb-4">
-                        <form action="/cart/add" method="post">
-                            <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="w-full py-2 bg-accent-ochre text-white rounded-md hover:bg-accent-terracotta transition">
-                                Add to Cart
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <?php
-                // Insert interstitial ad after every 6 products
-                if ($productCount % 6 === 0 && $productCount < count($products)): 
-                ?>
-                <div class="col-span-1 sm:col-span-2 lg:col-span-3 bg-gray-50 rounded-lg shadow-sm overflow-hidden my-2">
-                    <div class="p-4 flex items-center">
-                        <div class="relative flex-shrink-0 mr-4 w-24 h-24 bg-gradient-to-r from-accent-ceramicblue to-accent-navy rounded-md">
-                            <div class="absolute top-1 left-1 text-xs px-1 bg-white text-accent-navy rounded-full">Ad</div>
-                        </div>
-                        <div>
-                            <h3 class="font-medium text-accent-navy">Special Offer</h3>
-                            <p class="text-gray-600 text-sm">Discover our top-rated products with exclusive discounts.</p>
-                            <a href="#" class="mt-2 inline-block text-sm text-accent-teal hover:underline">Learn more</a>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-                <?php endforeach; ?>
+                            </td>
+                            <td class="py-4 px-2 text-center"><?= number_format($item->price, 2) ?> MAD</td>
+                            <td class="py-4 px-2 text-center">
+                                <form action="/cart/update" method="post" class="flex items-center justify-center">
+                                    <input type="hidden" name="product_id" value="<?= $item->product_id ?>">
+                                    <div class="flex items-center border border-gray-300 rounded-md">
+                                        <button type="submit" name="quantity" value="<?= max(1, $item->quantity - 1) ?>" class="px-2 py-1 text-gray-600 hover:bg-gray-100">-</button>
+                                        <span class="w-8 text-center"><?= $item->quantity ?></span>
+                                        <button type="submit" name="quantity" value="<?= $item->quantity + 1 ?>" class="px-2 py-1 text-gray-600 hover:bg-gray-100">+</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td class="py-4 px-2 text-right font-medium"><?= number_format($item->getTotal(), 2) ?> MAD</td>
+                            <td class="py-4 px-2 text-right">
+                                <a href="/cart/remove?id=<?= $item->product_id ?>" class="text-red-500 hover:text-red-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
             
-            <!-- Pagination -->
-            <?php if ($totalPages > 1): ?>
-            <div class="mt-8 flex justify-center">
-                <div class="flex space-x-1">
-                    <?php if ($currentPage > 1): ?>
-                        <a href="?page=<?= $currentPage - 1 ?><?= isset($category) ? '&category='.$category['id'] : '' ?><?= isset($search) ? '&search='.urlencode($search) : '' ?>" 
-                           class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                            Previous
-                        </a>
-                    <?php endif; ?>
-                    
-                    <?php 
-                    $start = max(1, $currentPage - 2);
-                    $end = min($totalPages, $start + 4);
-                    $start = max(1, $end - 4);
-                    
-                    for ($i = $start; $i <= $end; $i++): 
-                    ?>
-                        <a href="?page=<?= $i ?><?= isset($category) ? '&category='.$category['id'] : '' ?><?= isset($search) ? '&search='.urlencode($search) : '' ?>" 
-                           class="px-4 py-2 <?= $i === $currentPage ? 'bg-accent-teal text-white' : 'bg-white text-gray-700 hover:bg-gray-50' ?> border border-gray-300 rounded-md">
-                            <?= $i ?>
-                        </a>
-                    <?php endfor; ?>
-                    
-                    <?php if ($currentPage < $totalPages): ?>
-                        <a href="?page=<?= $currentPage + 1 ?><?= isset($category) ? '&category='.$category['id'] : '' ?><?= isset($search) ? '&search='.urlencode($search) : '' ?>" 
-                           class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                            Next
-                        </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <?php endif; ?>
-        <?php endif; ?>
-    </div>
-    
-    <!-- Right Sidebar with Categories and Ad Space -->
-    <div class="w-full lg:w-1/4 mt-8 lg:mt-0">
-        <!-- Categories Section -->
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <h2 class="text-xl font-semibold mb-4 text-accent-navy">Categories</h2>
-            <ul class="space-y-2">
-                <?php foreach ($categories as $cat): ?>
-                <li>
-                    <a 
-                        href="/products?category=<?= $cat['id'] ?>" 
-                        class="block px-3 py-2 rounded-md <?= (isset($category) && $category['id'] == $cat['id']) ? 'bg-accent-teal text-white' : 'hover:bg-gray-100' ?>"
-                    >
-                        <?= htmlspecialchars($cat['name']) ?>
+            <div class="mt-8 flex flex-col md:flex-row md:justify-between">
+                <div class="mb-4 md:mb-0">
+                    <a href="/cart/clear" class="inline-flex items-center text-gray-600 hover:text-red-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Clear Cart
                     </a>
-                </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-        
-        <!-- Ad Space -->
-        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div class="relative">
-                <div class="absolute top-2 right-2 text-xs px-2 py-1 bg-white text-accent-navy rounded-full">Ad</div>
-                <div class="bg-gradient-to-br from-accent-ochre to-accent-terracotta h-40 flex items-center justify-center">
-                    <div class="text-white text-center p-4">
-                        <h3 class="font-bold text-lg mb-2">Featured Deals</h3>
-                        <p class="text-sm mb-3">Limited time offers on selected items</p>
-                        <a href="#" class="inline-block px-4 py-1 bg-white text-accent-terracotta rounded-full text-sm font-medium hover:bg-gray-100 transition">
-                            View Offers
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex justify-between mb-2">
+                        <span class="font-medium">Subtotal:</span>
+                        <span class="font-bold"><?= number_format($cartTotal, 2) ?> MAD</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Shipping:</span>
+                        <span>Calculated at checkout</span>
+                    </div>
+                    <div class="border-t border-gray-200 my-4"></div>
+                    <div class="flex justify-between">
+                        <span class="text-lg font-bold">Total:</span>
+                        <span class="text-lg font-bold text-accent-terracotta"><?= number_format($cartTotal, 2) ?> MAD</span>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <a href="/checkout" class="block w-full py-3 px-6 bg-accent-ochre text-white font-medium text-center rounded-md hover:bg-accent-terracotta transition">
+                            Proceed to Checkout
                         </a>
                     </div>
                 </div>
             </div>
-        </div>
+        <?php endif; ?>
     </div>
 </div>
-

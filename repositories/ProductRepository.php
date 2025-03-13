@@ -56,7 +56,7 @@ class ProductRepository extends Repository
         LIMIt :limit OFFSET :offset";
 
         $statement = $this->db->pdo->prepare($sql);
-        $statement->bindValue(':keyword', "%keyword%");
+        $statement->bindValue(':keyword', "%$keyword%");
         $statement->bindValue(':limit', $limit);
         $statement->bindValue(':offset', $offset);
         $statement->execute();
