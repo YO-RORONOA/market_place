@@ -70,6 +70,7 @@ class PaymentService
             Application::$app->session->setFlash('error', 'Payment Error: ' . $e->getMessage());
             throw new \Exception('Failed to create checkout session: ' . $e->getMessage());
         }
+        
 
 
     }
