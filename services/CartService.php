@@ -16,7 +16,7 @@ class CartService
         $this->productRepository = new ProductRepository();
     }
     
-    public function getCart(): array
+    public function getCart(): mixed   
     {
         return Application::$app->session->get(self::CART_SESSION_KEY) ?? [];
     }
