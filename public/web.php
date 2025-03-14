@@ -66,6 +66,9 @@ $app->router->get('/passwordResetSent', [AuthController::class, 'passwordResetSe
 
 
 
+$app->router->get('/products', [App\controllers\ProductController::class, 'index']);
+$app->router->get('/products/view', [App\controllers\ProductController::class, 'view']);
+
 
 $app->router->get('/cart', [App\controllers\CartController::class, 'index']);
 $app->router->post('/cart/add', [App\controllers\CartController::class, 'add']);

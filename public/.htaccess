@@ -8,4 +8,4 @@ RewriteRule ^ - [L]
 RewriteRule ^(assets|css|js|images)/ - [L]
 
 # Forward all other requests to index.php
-RewriteRule ^ index.php [QSA,L]
+RewriteRule ^ web.php [QSA,L]

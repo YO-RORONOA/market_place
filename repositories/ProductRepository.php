@@ -1,4 +1,6 @@
 <?php
+namespace App\repositories;
+
 
 namespace App\repositories;
 
@@ -74,7 +76,7 @@ class ProductRepository extends Repository
         {
             foreach($filters as $key => $value)
             {
-                $sql .= "AND $key = :$key";
+                $sql .= " AND $key = :$key";
                 $params[":$key"] = $value;
             }
         }
