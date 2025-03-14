@@ -74,5 +74,15 @@ $app->router->get('/cart/remove', [App\controllers\CartController::class, 'remov
 $app->router->get('/cart/clear', [App\controllers\CartController::class, 'clear']);
 
 
+$app->router->get('/checkout', [App\controllers\CheckoutController::class, 'index']);
+$app->router->post('/checkout/process', [App\controllers\CheckoutController::class, 'process']);
+$app->router->get('/checkout/success', [App\controllers\CheckoutController::class, 'success']);
+$app->router->get('/checkout/cancel', [App\controllers\CheckoutController::class, 'cancel']);
+
+// Stripe webhook route (no CSRF protection needed)
+$app->router->post('/webhook/stripe', [App\controllers\CheckoutController::class, 'webhook']);
+
+
+$app->router->get('/test/load-cart', [App\controllers\TestController::class, 'loadTestCart']);
 
 $app->run();

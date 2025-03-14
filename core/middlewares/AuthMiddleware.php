@@ -4,7 +4,7 @@ namespace App\Core\Middlewares;
 
 use App\core\Application;
 use App\core\middlewares\BaseMiddleware;
-use ForbiddenException;
+use App\core\exception\ForbiddenException;
 
 class AuthMiddleware extends BaseMiddleware
 {
