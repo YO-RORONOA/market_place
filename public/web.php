@@ -1,9 +1,5 @@
 <?php
-/**
- * User: TheCodeholic
- * Date: 7/7/2020
- * Time: 9:57 AM
- */
+
 
  use App\controllers\SiteController;
  use App\core\Application;
@@ -82,7 +78,7 @@ $app->router->post('/checkout/process', [App\controllers\CheckoutController::cla
 $app->router->get('/checkout/success', [App\controllers\CheckoutController::class, 'success']);
 $app->router->get('/checkout/cancel', [App\controllers\CheckoutController::class, 'cancel']);
 
-// Stripe webhook route (no CSRF protection needed)
+
 $app->router->post('/webhook/stripe', [App\controllers\CheckoutController::class, 'webhook']);
 
 

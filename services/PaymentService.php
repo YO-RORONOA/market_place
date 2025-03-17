@@ -12,7 +12,7 @@ class PaymentService
 {
     private string $apiKey;
     private string $webhookSecret;
-    private string $currency = 'usd';
+    private string $currency = 'mad';
     
     public function __construct()
     {
@@ -51,7 +51,7 @@ class PaymentService
                             'description' => substr("Product ID: {$item->product_id}", 0, 255),
                             'images' => [$item->image_path ? Application::$app->request->getHostInfo() . $item->image_path : null],
                         ],
-                        'unit_amount' => (int)($item->price), // Convert to cents
+                        'unit_amount' => (int)($item->price), 
                     ],
                     'quantity' => $item->quantity,
                 ];
@@ -70,7 +70,7 @@ class PaymentService
                     'user_id' => $user->id,
                 ],
                 'shipping_address_collection' => [
-                    'allowed_countries' => ['US', 'CA', 'MA'], // US, Canada, Morocco
+                    'allowed_countries' => ['US', 'CA', 'MA'],
                 ],
             ]);
             
@@ -108,8 +108,6 @@ class PaymentService
                 case 'payment_intent.payment_failed':
                     // Payment failed
                     return $this->handlePaymentIntentFailed($event->data->object);
-                
-                // Add other event types as needed
                 
                 default:
                     // Unexpected event type
