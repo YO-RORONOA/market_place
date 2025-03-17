@@ -87,4 +87,13 @@ class Request
         
         return $protocol . '://' . $host;
     }
+
+    // App/core/Request.php
+
+    // Add this method to check if request is AJAX
+    public function isXhr(): bool
+    {
+        return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    }
 }
