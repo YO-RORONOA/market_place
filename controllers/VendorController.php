@@ -106,6 +106,36 @@ class VendorController extends Controller
         }
     }
 
+    public function editProduct(Request $request)
+    {
+        $id = $request->getQuery('id');
+        $vendorId = Application::$app->session->get('user')['id'] ?? 0;
+        
+        if (!$id) {
+            Application::$app->session->setFlash('error', 'Product ID is required');
+            Application::$app->response->redirect('/vendor/products');
+            return;
+        }
+        
+        $productData = $this->productRepository->findOne($id);
+        
+        if (!$productData || $productData['vendor_id'] != $vendorId) {
+            Application::$app->session->setFlash('error', 'Product not found or you do not have permission to edit it');
+            Application::$app->response->redirect('/vendor/products');
+            return;
+        }
+        
+        $product = new Product();
+        $product->loadData($productData);
+        $categories = $this->categoryRepository->findAll();
+        
+        return $this->render('vendor/products/edit', [
+            'model' => $product,
+            'categories' => $categories,
+            'title' => 'Edit Product'
+        ]);
+    }
+
 
     private function handleImageUpload(Request $request)
     {
@@ -132,6 +162,35 @@ class VendorController extends Controller
         return null;
     }
 
+    public function deleteProduct(Request $request)
+    {
+        $id = $request->getQuery('id');
+        $vendorId = Application::$app->session->get('user')['id'] ?? 0;
+        
+        if (!$id) {
+            Application::$app->session->setFlash('error', 'Product ID is required');
+            Application::$app->response->redirect('/vendor/products');
+            return;
+        }
+        
+        $productData = $this->productRepository->findOne($id);
+        
+        if (!$productData || $productData['vendor_id'] != $vendorId) {
+            Application::$app->session->setFlash('error', 'Product not found or you do not have permission to delete it');
+            Application::$app->response->redirect('/vendor/products');
+            return;
+        }
+        
+        $success = $this->productRepository->delete($id);
+        
+        if ($success) {
+            Application::$app->session->setFlash('success', 'Product deleted successfully');
+        } else {
+            Application::$app->session->setFlash('error', 'Failed to delete product');
+        }
+        
+        Application::$app->response->redirect('/vendor/products');
+    }
 
     
 

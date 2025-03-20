@@ -58,7 +58,7 @@ class Request
         return $body;
     }
 
-    public function getQuery(string $key = null)
+    public function getQuery(string $key = null): mixed
     {
         $queryParams = [];
         
