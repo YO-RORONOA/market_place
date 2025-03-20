@@ -4,6 +4,7 @@ use App\core\Application;
 use App\core\Controller;
 use App\Core\Middlewares\VendorMiddleware;
 use App\core\Request;
+use App\models\Product;
 use App\repositories\CategoryRepository;
 use App\repositories\ProductRepository;
 
@@ -49,8 +50,21 @@ class VendorController extends Controller
             'title' => 'My Products'
         ]);
 
-
     }
+
+    public function createProduct()
+    {
+        $product = new Product();
+        $categories = $this->categoryRepository->findAll();
+
+        return $this->render('vendor/products/create',
+        [
+            'model' =>$product,
+            'categories' => $categories,
+            'title' => 'create New Product'
+        ]);
+    }
+
 
     
 
