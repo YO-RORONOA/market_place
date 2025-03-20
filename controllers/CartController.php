@@ -31,6 +31,15 @@ class CartController extends Controller
     public function add(Request $request)
     {
         if (!$request->isPost()) {
+            if ($request->isXhr()) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Invalid request method'
+                ]);
+                exit;
+            }
+            
             Application::$app->response->redirect('/cart');
             return;
         }
@@ -39,33 +48,33 @@ class CartController extends Controller
         $quantity = (int)$request->getbody()['quantity'] ?? 1;
         
         if ($productId <= 0 || $quantity <= 0) {
-            if($request->isXhr())
-            {
+            if ($request->isXhr()) {
+                header('Content-Type: application/json');
                 echo json_encode([
-                    'sucess' => false,
+                    'success' => false,
                     'message' => 'Invalid product or quantity'
                 ]);
-                return;
+                exit;
             }
-
+            
             Application::$app->session->setFlash('error', 'Invalid product or quantity');
             Application::$app->response->redirect('/products');
             return;
         }
         
         $success = $this->cartService->addItem($productId, $quantity);
-        if($request->isXhr())
-        {
+        
+        if ($request->isXhr()) {
+            header('Content-Type: application/json');
             echo json_encode([
-                'sucess' => $success,
+                'success' => $success,
                 'message' => $success ? 'Product added to cart' : 'Failed to add product to cart',
                 'cartCount' => $this->cartService->getItemCount(),
                 'cartTotal' => $this->cartService->getCartTotal()
             ]);
-            return;
+            exit;
         }
-
-
+        
         if ($success) {
             Application::$app->session->setFlash('success', 'Product added to cart');
         } else {
@@ -79,6 +88,15 @@ class CartController extends Controller
     public function update(Request $request)
     {
         if (!$request->isPost()) {
+            if ($request->isXhr()) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Invalid request method'
+                ]);
+                exit;
+            }
+            
             Application::$app->response->redirect('/cart');
             return;
         }
@@ -86,15 +104,16 @@ class CartController extends Controller
         $productId = (int)$request->getbody()['product_id'] ?? 0;
         $quantity = (int)$request->getbody()['quantity'] ?? 0;
         
-        
         if ($productId <= 0) {
-            if($request->isXhr())
-            {
+            if ($request->isXhr()) {
+                header('Content-Type: application/json');
                 echo json_encode([
                     'success' => false,
                     'message' => 'Invalid product'
                 ]);
+                exit;
             }
+            
             Application::$app->session->setFlash('error', 'Invalid product');
             Application::$app->response->redirect('/cart');
             return;
@@ -102,20 +121,21 @@ class CartController extends Controller
         
         $success = $this->cartService->updateItem($productId, $quantity);
         
-        if($request->isXhr())
-        {
+        if ($request->isXhr()) {
+            header('Content-Type: application/json');
+            
             $cartItems = $this->cartService->getCartItems();
             $cartTotal = $this->cartService->getCartTotal();
-
+            
+            // Calculate item total
             $itemTotal = 0;
-            foreach($cartItems as $item)
-            {
-                if($item->product_id == $productId)
-                {
+            foreach ($cartItems as $item) {
+                if ($item->product_id == $productId) {
                     $itemTotal = $item->getTotal();
                     break;
                 }
             }
+            
             echo json_encode([
                 'success' => $success,
                 'message' => $success ? 'Cart updated' : 'Failed to update cart',
@@ -124,12 +144,9 @@ class CartController extends Controller
                 'cartCount' => $this->cartService->getItemCount(),
                 'quantity' => $quantity
             ]);
-            return;
-
-
+            exit;
         }
-
-
+        
         if ($success) {
             Application::$app->session->setFlash('success', 'Cart updated');
         } else {
@@ -140,47 +157,58 @@ class CartController extends Controller
     }
     
     public function remove(Request $request)
-{
-    $productId = (int)$request->getQuery('id') ?? 0;
-    
-    if ($productId <= 0) {
-        if ($request->isXhr()) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Invalid product'
-            ]);
+    {
+        $productId = (int)$request->getQuery('id') ?? 0;
+        
+        if ($productId <= 0) {
+            if ($request->isXhr()) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Invalid product'
+                ]);
+                exit;
+            }
+            
+            Application::$app->session->setFlash('error', 'Invalid product');
+            Application::$app->response->redirect('/cart');
             return;
         }
         
-        Application::$app->session->setFlash('error', 'Invalid product');
+        $success = $this->cartService->removeItem($productId);
+        
+        if ($request->isXhr()) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => $success,
+                'message' => $success ? 'Product removed from cart' : 'Failed to remove product from cart',
+                'cartCount' => $this->cartService->getItemCount(),
+                'cartTotal' => $this->cartService->getCartTotal()
+            ]);
+            exit;
+        }
+        
+        if ($success) {
+            Application::$app->session->setFlash('success', 'Product removed from cart');
+        } else {
+            Application::$app->session->setFlash('error', 'Failed to remove product from cart');
+        }
+        
         Application::$app->response->redirect('/cart');
-        return;
     }
-    
-    $success = $this->cartService->removeItem($productId);
-    
-    if ($request->isXhr()) {
-        echo json_encode([
-            'success' => $success,
-            'message' => $success ? 'Product removed from cart' : 'Failed to remove product from cart',
-            'cartCount' => $this->cartService->getItemCount(),
-            'cartTotal' => $this->cartService->getCartTotal()
-        ]);
-        return;
-    }
-    
-    if ($success) {
-        Application::$app->session->setFlash('success', 'Product removed from cart');
-    } else {
-        Application::$app->session->setFlash('error', 'Failed to remove product from cart');
-    }
-    
-    Application::$app->response->redirect('/cart');
-}
     
     public function clear()
     {
         $this->cartService->clearCart();
+        
+        if ($this->request->isXhr()) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Cart cleared'
+            ]);
+            return;
+        }
+        
         Application::$app->session->setFlash('success', 'Cart cleared');
         Application::$app->response->redirect('/cart');
     }

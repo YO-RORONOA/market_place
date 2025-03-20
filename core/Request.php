@@ -88,12 +88,16 @@ class Request
         return $protocol . '://' . $host;
     }
 
-    // App/core/Request.php
 
-    // Add this method to check if request is AJAX
     public function isXhr(): bool
     {
-        return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        return (
+            !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+        ) || (
+            // check for a custom header that we'll send from fetch
+            !empty($_SERVER['HTTP_X_AJAX_REQUEST']) &&
+            $_SERVER['HTTP_X_AJAX_REQUEST'] === 'true'
+        );
     }
 }

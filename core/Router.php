@@ -93,4 +93,15 @@ class Router
         include_once Application::$ROOT_DIR."/views/$view.php";
         return ob_get_clean();
     }
+
+    public function renderPartial($view, $params = []): string
+{
+    foreach ($params as $key => $value) {
+        $$key = $value;
+    }
+    
+    ob_start();
+    include Application::$ROOT_DIR . "/views/partials/$view.php";
+    return ob_get_clean();
+}
 }

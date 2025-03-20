@@ -107,7 +107,7 @@ function initCartQuantityButtons() {
             const quantityDisplay = form.querySelector('span');
             const currentQuantity = parseInt(quantityDisplay.textContent);
             
-            // Determine new quantity based on which button was clicked
+            // new quantity based on which button was clicked
             let newQuantity;
             if (this.textContent.trim() === '+') {
                 newQuantity = currentQuantity + 1;

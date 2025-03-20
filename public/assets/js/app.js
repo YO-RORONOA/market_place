@@ -1,5 +1,5 @@
 
-
+console.log('test');
 async function fetchFromServer(url, options = {})
 {
     try{

@@ -136,5 +136,9 @@
         </div>
     </footer>
     <script src="assets/js/app.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/products.js"></script>
+    <!-- <script > console.log('test')</script> -->
+
 </body>
 </html>

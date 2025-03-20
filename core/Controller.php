@@ -34,6 +34,11 @@ class Controller
         return Application::$app->router->renderView($view, $params);
     }
 
+    public function renderPartial($view, $params = []): string
+    {
+        return Application::$app->router->renderPartial($view, $params);
+    }
+
 
     public function registerMiddleware($middleware)
     {
