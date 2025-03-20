@@ -65,6 +65,73 @@ class VendorController extends Controller
         ]);
     }
 
+    public function storeProduct(Request $request)
+    {
+        $vendorId = Application::$app->session->get('user')['id'] ?? 0;
+        $product = new Product();
+
+        if($request->isPost())
+        {
+            $data = $request->getbody();
+            $data['vendor_id'] = $vendorId;
+
+            $imagePath = $this->handleImageUpload($request);
+            if($imagePath)
+            {
+                $data['image_path'] = $imagePath;
+            }
+
+            $productId = $this->productRepository->create($data);
+
+            if($productId)
+            {
+                Application::$app->session->setFlash('success', 'product created successfully');
+                Application::$app->response->redirect('/vendor/products');
+                return;
+            }
+
+            //in case of error
+
+            $product->loadData($data);
+            Application::$app->session->setFlash('error', 'Failed to create product');
+
+            $categories = $this->categoryRepository->findAll();
+        
+        return $this->render('vendor/products/create', [
+            'model' => $product,
+            'categories' => $categories,
+            'title' => 'Create New Product'
+        ]);
+
+        }
+    }
+
+
+    private function handleImageUpload(Request $request)
+    {
+        if(!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK)
+        {
+            return null;
+        }
+
+        $uploadDir = Application::$ROOT_DIR . '/public/uploads/products/';
+
+        if(!is_dir($uploadDir))
+        {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $filename = uniqid() . '_' . $_FILES['image']['name'];
+        $uploadPath = $uploadDir . $filename;
+
+        if(move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath))
+        {
+            return '/uploads/products/' . $filename;
+        }
+
+        return null;
+    }
+
 
     
 
