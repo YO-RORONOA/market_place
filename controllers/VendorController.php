@@ -1,5 +1,8 @@
 <?php
 
+namespace App\controllers;
+
+
 use App\core\Application;
 use App\core\Controller;
 use App\Core\Middlewares\VendorMiddleware;
@@ -19,14 +22,14 @@ class VendorController extends Controller
         $this->productRepository = new ProductRepository();
         $this->categoryRepository = new CategoryRepository();
 
-        $this->registerMiddleware(new VendorMiddleware);
+        // $this->registerMiddleware(new VendorMiddleware);
         $this->setLayout('vendor');
     }
 
 
     public function dashboard()
     {
-        return $this->render('vendor/dashboard', [
+        return $this->render('seller/dashboard', [
             'title' => 'vendor Dashboard'
         ]);
     }
