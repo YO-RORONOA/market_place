@@ -292,3 +292,127 @@
         </table>
     </div>
     
+    <div class="mt-2 text-right">
+        <a href="/vendor/orders" class="text-xs text-accent-teal hover:text-accent-navy font-medium inline-flex items-center">
+            View All Orders
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </a>
+    </div>
+</div>
+
+<!-- Top Products (Collapsible on mobile) -->
+<div class="mb-6">
+    <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-semibold text-accent-navy">Top Products</h2>
+        <button id="toggleProducts" class="md:hidden text-accent-teal focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+    </div>
+    
+    <div id="productsContent" class="bg-white rounded-lg shadow-sm p-4">
+        <div class="space-y-4">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
+                    <img src="/uploads/products/moroccan-plate.jpg" alt="Moroccan Plate" class="w-full h-full object-cover">
+                </div>
+                <div class="ml-3 flex-grow">
+                    <h3 class="text-xs font-medium text-accent-navy">Handcrafted Moroccan Ceramic Plate</h3>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-xs text-gray-500">75.99 MAD</span>
+                        <span class="text-xs font-medium text-accent-teal">5 sold</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+                        <div class="bg-accent-teal h-1.5 rounded-full" style="width: 30%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-right">
+            <a href="/vendor/analytics" class="text-xs text-accent-teal hover:text-accent-navy font-medium inline-flex items-center">
+                View Analytics
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Top Products (Collapsible on mobile) -->
+<div class="mb-6">
+    <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-semibold text-accent-navy">Top Products</h2>
+        <button id="toggleProducts" class="md:hidden text-accent-teal focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+    </div>
+    
+    <div id="productsContent" class="bg-white rounded-lg shadow-sm p-4">
+        <div class="space-y-4">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
+                    <img src="/uploads/products/moroccan-plate.jpg" alt="Moroccan Plate" class="w-full h-full object-cover">
+                </div>
+                <div class="ml-3 flex-grow">
+                    <h3 class="text-xs font-medium text-accent-navy">Handcrafted Moroccan Ceramic Plate</h3>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-xs text-gray-500">39.99 MAD</span>
+                        <span class="text-xs font-medium text-accent-teal">12 sold</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+                        <div class="bg-accent-teal h-1.5 rounded-full" style="width: 70%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
+                    <img src="/uploads/products/blue-tagine.jpg" alt="Blue Tagine" class="w-full h-full object-cover">
+                </div>
+                <div class="ml-3 flex-grow">
+                    <h3 class="text-xs font-medium text-accent-navy">Blue Moroccan Ceramic Tagine</h3>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-xs text-gray-500">64.99 MAD</span>
+                        <span class="text-xs font-medium text-accent-teal">8 sold</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+                        <div class="bg-accent-teal h-1.5 rounded-full" style="width: 50%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-gray-200 rounded-md overflow-hidden flex-shrink-0">
+                    <img src="/uploads/products/silver-earrings.jpg" alt="Silver Earrings" class="w-full h-full object-cover">
+                </div>
+                <div class="ml-3 flex-grow">
+                    <h3 class="text-xs font-medium text-accent-navy">Silver Moroccan Filigree Earrings</h3>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-xs text-gray-500">75.99 MAD</span>
+                        <span class="text-xs font-medium text-accent-teal">5 sold</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+                        <div class="bg-accent-teal h-1.5 rounded-full" style="width: 30%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-right">
+            <a href="/vendor/analytics" class="text-xs text-accent-teal hover:text-accent-navy font-medium inline-flex items-center">
+                View Analytics
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+
