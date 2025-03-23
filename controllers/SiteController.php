@@ -1,9 +1,5 @@
 <?php
-/**
- * User: TheCodeholic
- * Date: 7/8/2020
- * Time: 8:43 AM
- */
+
 
 namespace App\controllers;
 
@@ -12,12 +8,7 @@ use App\core\Controller;
 use App\core\Request;
 
 
-/**
- * Class SiteController
- *
- * @author  Zura Sekhniashvili <zurasekhniashvili@gmail.com>
- * @package app\controllers
- */
+
 class SiteController extends Controller
 {
     public function home()

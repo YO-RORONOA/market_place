@@ -4,6 +4,7 @@
  use App\controllers\SiteController;
  use App\core\Application;
  use App\controllers\AuthController;
+use App\controllers\VendorController;
 
 require_once __DIR__.'/../vendor/autoload.php';
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
@@ -83,5 +84,27 @@ $app->router->post('/webhook/stripe', [App\controllers\CheckoutController::class
 
 
 $app->router->get('/test/load-cart', [App\controllers\TestController::class, 'loadTestCart']);
+
+
+
+
+
+
+
+
+
+
+
+$app->router->get('/vendor/dashboard', [VendorController::class, 'dashboard']);
+$app->router->get('/vendor/products', [VendorController::class, 'products']);
+$app->router->get('/vendor/products/create', [VendorController::class, 'createProduct']);
+$app->router->post('/vendor/products/store', [VendorController::class, 'storeProduct']);
+$app->router->get('/vendor/products/edit', [VendorController::class, 'editProduct']);
+$app->router->post('/vendor/products/update', [VendorController::class, 'updateProduct']);
+$app->router->get('/vendor/products/delete', [VendorController::class, 'deleteProduct']);
+$app->router->post('/vendor/products/generate-description', [VendorController::class, 'generateDescription']);
+$app->router->post('/vendor/products/generate-tags', [VendorController::class, 'generateTags']);
+
+
 
 $app->run();
