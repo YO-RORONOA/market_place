@@ -74,3 +74,78 @@
         </nav>
     </div>
 </div>
+
+<!-- Desktop heading - hidden on mobile -->
+<h1 class="text-2xl font-bold text-accent-navy mb-6 hidden md:block">Vendor Dashboard</h1>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 gap-4 mb-6 md:grid-cols-3 md:gap-6 md:mb-8">
+    <!-- Products Card -->
+    <div class="bg-gradient-to-br from-accent-ochre to-accent-terracotta rounded-lg p-4 text-white">
+        <div class="flex justify-between items-start">
+            <div>
+                <h3 class="text-base font-semibold opacity-90 mb-1">Products</h3>
+                <p class="text-2xl font-bold">10</p>
+            </div>
+            <div class="p-1 bg-white bg-opacity-20 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </div>
+        </div>
+        <div class="mt-3">
+            <a href="/vendor/products" class="text-xs text-white hover:text-white hover:underline font-medium flex items-center">
+                View All Products
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Orders Card -->
+    <div class="bg-gradient-to-br from-accent-teal to-accent-ceramicblue rounded-lg p-4 text-white">
+        <div class="flex justify-between items-start">
+            <div>
+                <h3 class="text-base font-semibold opacity-90 mb-1">Orders</h3>
+                <p class="text-2xl font-bold">5</p>
+            </div>
+            <div class="p-1 bg-white bg-opacity-20 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+            </div>
+        </div>
+        <div class="mt-3">
+            <a href="/vendor/orders" class="text-xs text-white hover:text-white hover:underline font-medium flex items-center">
+                View All Orders
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Revenue Card -->
+    <div class="bg-gradient-to-br from-accent-navy to-purple-700 rounded-lg p-4 text-white">
+        <div class="flex justify-between items-start">
+            <div>
+                <h3 class="text-base font-semibold opacity-90 mb-1">Revenue</h3>
+                <p class="text-2xl font-bold">2,500 MAD</p>
+            </div>
+            <div class="p-1 bg-white bg-opacity-20 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+        <div class="mt-3">
+            <a href="/vendor/analytics" class="text-xs text-white hover:text-white hover:underline font-medium flex items-center">
+                View Analytics
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
