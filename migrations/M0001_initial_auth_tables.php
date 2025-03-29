@@ -10,7 +10,6 @@ class m0001_initial_auth_tables extends Migration
     {
         $db = Application::$app->db;
         
-        // Create roles table
         $sql = "CREATE TABLE IF NOT EXISTS roles (
             id SERIAL PRIMARY KEY,
             name VARCHAR(50) NOT NULL UNIQUE,
@@ -21,7 +20,6 @@ class m0001_initial_auth_tables extends Migration
         
         $db->pdo->exec($sql);
         
-        // Insert default roles
         $sql = "INSERT INTO roles (name) VALUES 
             ('buyer'),
             ('vendor'),
@@ -30,27 +28,35 @@ class m0001_initial_auth_tables extends Migration
         
         $db->pdo->exec($sql);
         
-        // Create users table
         $sql = "CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             firstname VARCHAR(255) NOT NULL,
             lastname VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL UNIQUE,
             password VARCHAR(255) NOT NULL,
-            role_id INT NOT NULL DEFAULT 1,
             status VARCHAR(50) NOT NULL DEFAULT 'pending',
             verification_token VARCHAR(255),
             email_verified_at TIMESTAMP NULL,
             remember_token VARCHAR(255) NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            deleted_at TIMESTAMP NULL,
-            FOREIGN KEY (role_id) REFERENCES roles(id)
+            deleted_at TIMESTAMP NULL
         )";
         
         $db->pdo->exec($sql);
         
-        // Create password_resets table
+        $sql = "CREATE TABLE IF NOT EXISTS user_roles (
+            id SERIAL PRIMARY KEY,
+            user_id INT NOT NULL,
+            role_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+            UNIQUE(user_id, role_id)
+        )";
+        
+        $db->pdo->exec($sql);
+        
         $sql = "CREATE TABLE IF NOT EXISTS password_resets (
             id SERIAL PRIMARY KEY,
             user_id INT NOT NULL,
@@ -66,8 +72,8 @@ class m0001_initial_auth_tables extends Migration
     {
         $db = Application::$app->db;
         
-        // Drop tables in reverse order due to foreign key constraints
         $sql = "DROP TABLE IF EXISTS password_resets;
+                DROP TABLE IF EXISTS user_roles;
                 DROP TABLE IF EXISTS users;
                 DROP TABLE IF EXISTS roles;";
                 

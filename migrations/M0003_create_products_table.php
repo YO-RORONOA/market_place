@@ -4,9 +4,8 @@ use App\core\Application;
 use App\migrations\Migration;
 
 
-class M0003_create_products_table extends Migration
+class M0004_create_products_table extends Migration
 {
-
     public function up(): void  
     {
         $db = Application::$app->db;
@@ -25,7 +24,7 @@ class M0003_create_products_table extends Migration
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         deleted_at TIMESTAMP NULL,
         FOREIGN KEY (category_id) REFERENCES categories(id),
-        FOREIGN KEY (vendor_id) REFERENCES vendors(id)
+        FOREIGN KEY (vendor_id) REFERENCES users(id)
         )";
         $db->pdo->exec($sql);
     }
