@@ -195,7 +195,234 @@ class VendorController extends Controller
         ]);
     }
     
+    public function analytics()
+    {
+        $vendorId = Application::$app->session->get('user')['id'] ?? 0;
+        
+        $stats = $this->vendorRepository->getStoreStats($vendorId);
+        
+        $monthlySales = $this->getVendorMonthlySales($vendorId);
+        
+        $categoryDistribution = $this->getProductCategoryDistribution($vendorId);
+        
+        $topProducts = $this->vendorRepository->getTopProducts($vendorId, 5);
+        
+        $ordersPerDay = $this->getOrdersPerDay($vendorId, 14); 
+        
+        return $this->render('vendor/analytics/index', [
+            'stats' => $stats,
+            'monthlySales' => $monthlySales,
+            'categoryDistribution' => $categoryDistribution,
+            'topProducts' => $topProducts,
+            'ordersPerDay' => $ordersPerDay,
+            'title' => 'Analytics'
+        ]);
+    }
 
+    private function getVendorMonthlySales($vendorId, $limit = 6)
+    {
+        $sql = "SELECT 
+                    DATE_TRUNC('month', o.created_at) as month,
+                    SUM(oi.price * oi.quantity) as total_sales,
+                    COUNT(DISTINCT o.id) as order_count
+                FROM 
+                    orders o
+                JOIN 
+                    order_items oi ON o.id = oi.order_id
+                JOIN 
+                    products p ON oi.product_id = p.id
+                WHERE 
+                    p.vendor_id = :vendor_id
+                    AND o.status = 'paid'
+                GROUP BY 
+                    DATE_TRUNC('month', o.created_at)
+                ORDER BY 
+                    month DESC
+                LIMIT :limit";
+        
+        $statement = Application::$app->db->pdo->prepare($sql);
+        $statement->bindValue(':vendor_id', $vendorId);
+        $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $statement->execute();
+        
+        $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        
+        foreach ($result as &$row) {
+            $row['month'] = date('M Y', strtotime($row['month']));
+        }
+        
+        return array_reverse($result);
+    }
+    
+    private function getProductCategoryDistribution($vendorId)
+    {
+        $sql = "SELECT 
+                    c.name as category_name,
+                    COUNT(p.id) as product_count
+                FROM 
+                    products p
+                JOIN 
+                    categories c ON p.category_id = c.id
+                WHERE 
+                    p.vendor_id = :vendor_id
+                    AND p.deleted_at IS NULL
+                GROUP BY 
+                    c.name
+                ORDER BY 
+                    product_count DESC";
+        
+        $statement = Application::$app->db->pdo->prepare($sql);
+        $statement->bindValue(':vendor_id', $vendorId);
+        $statement->execute();
+        
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
+    
+    private function getOrdersPerDay($vendorId, $days = 14)
+    {
+        $sql = "SELECT 
+                    DATE(o.created_at) as order_date,
+                    COUNT(DISTINCT o.id) as order_count,
+                    SUM(oi.price * oi.quantity) as daily_total
+                FROM 
+                    orders o
+                JOIN 
+                    order_items oi ON o.id = oi.order_id
+                JOIN 
+                    products p ON oi.product_id = p.id
+                WHERE 
+                    p.vendor_id = :vendor_id
+                    AND o.created_at >= CURRENT_DATE - :days::INTERVAL
+                GROUP BY 
+                    DATE(o.created_at)
+                ORDER BY 
+                    order_date";
+        
+        $statement = Application::$app->db->pdo->prepare($sql);
+        $statement->bindValue(':vendor_id', $vendorId);
+        $statement->bindValue(':days', $days . ' days');
+        $statement->execute();
+        
+        $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        
+        foreach ($result as &$row) {
+            $row['order_date'] = date('M d', strtotime($row['order_date']));
+        }
+        
+        return $result;
+    }
+    
+    private function getVendorOrders($vendorId, $conditions = [], $limit = 10, $offset = 0)
+    {
+        $sql = "SELECT DISTINCT o.id
+                FROM orders o
+                JOIN order_items oi ON o.id = oi.order_id
+                JOIN products p ON oi.product_id = p.id
+                WHERE p.vendor_id = :vendor_id";
+        
+        if (!empty($conditions)) {
+            foreach ($conditions as $key => $value) {
+                $sql .= " AND o.$key = :$key";
+            }
+        }
+        
+        $sql .= " ORDER BY o.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+        
+        $statement = Application::$app->db->pdo->prepare($sql);
+        $statement->bindValue(':vendor_id', $vendorId);
+        
+        if (!empty($conditions)) {
+            foreach ($conditions as $key => $value) {
+                $statement->bindValue(":$key", $value);
+            }
+        }
+        
+        $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $statement->execute();
+        
+        $orderIds = $statement->fetchAll(\PDO::FETCH_COLUMN);
+        
+        if (empty($orderIds)) {
+            return [];
+        }
+        
+        $orders = [];
+        foreach ($orderIds as $orderId) {
+            $order = $this->orderRepository->findOne($orderId);
+            if ($order) {
+                $items = $this->orderItemRepository->findByOrderId($orderId);
+                
+                $vendorItems = [];
+                $vendorTotal = 0;
+                
+                foreach ($items as $item) {
+                    $product = $this->productRepository->findOne($item['product_id']);
+                    
+                    if ($product && $product['vendor_id'] == $vendorId) {
+                        $item['product'] = $product;
+                        $vendorItems[] = $item;
+                        $vendorTotal += $item['price'] * $item['quantity'];
+                    }
+                }
+                
+                $order['vendor_items'] = $vendorItems;
+                $order['vendor_total'] = $vendorTotal;
+                
+                $order['customer'] = $this->userRepository->findOne($order['user_id']);
+                
+                $orders[] = $order;
+            }
+        }
+        
+        return $orders;
+    }
+    
+    private function countVendorOrders($vendorId, $conditions = [])
+    {
+        $sql = "SELECT COUNT(DISTINCT o.id)
+                FROM orders o
+                JOIN order_items oi ON o.id = oi.order_id
+                JOIN products p ON oi.product_id = p.id
+                WHERE p.vendor_id = :vendor_id";
+        
+        if (!empty($conditions)) {
+            foreach ($conditions as $key => $value) {
+                $sql .= " AND o.$key = :$key";
+            }
+        }
+        
+        $statement = Application::$app->db->pdo->prepare($sql);
+        $statement->bindValue(':vendor_id', $vendorId);
+        
+        if (!empty($conditions)) {
+            foreach ($conditions as $key => $value) {
+                $statement->bindValue(":$key", $value);
+            }
+        }
+        
+        $statement->execute();
+        
+        return (int)$statement->fetchColumn();
+    }
+    
+    private function getVendorOrdersByStatus($vendorId, $status)
+    {
+        $sql = "SELECT DISTINCT o.id
+                FROM orders o
+                JOIN order_items oi ON o.id = oi.order_id
+                JOIN products p ON oi.product_id = p.id
+                WHERE p.vendor_id = :vendor_id
+                AND o.status = :status";
+        
+        $statement = Application::$app->db->pdo->prepare($sql);
+        $statement->bindValue(':vendor_id', $vendorId);
+        $statement->bindValue(':status', $status);
+        $statement->execute();
+        
+        return $statement->fetchAll(\PDO::FETCH_COLUMN);
+    }
 
     public function createProduct()
     {
@@ -386,4 +613,100 @@ class VendorController extends Controller
         return null;
     }
 
-  
+    public function generateDescription(Request $request)
+    {
+        if (!$request->isPost()) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid request method']);
+            exit;
+        }
+        
+        $data = $request->getBody();
+        $productName = $data['name'] ?? '';
+        $category = $data['category'] ?? '';
+        
+        if (empty($productName)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Product name is required']);
+            exit;
+        }
+        
+        try {
+            $aiService = new \App\services\AIService();
+            $description = $aiService->generateProductDescription($productName, $category);
+            
+            echo json_encode(['description' => $description]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+        
+        exit;
+    }
+    
+    public function generateTags(Request $request)
+    {
+        if (!$request->isPost()) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid request method']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        $productName = $data['name'] ?? '';
+        $category = $data['category'] ?? '';
+        $description = $data['description'] ?? '';
+        
+        if (empty($productName)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Product name is required']);
+            exit;
+        }
+        
+        try {
+            $aiService = new \App\services\AIService();
+            $tags = $aiService->generateProductTags($productName, $category, $description);
+            
+            echo json_encode(['tags' => $tags]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+        
+        exit;
+    }
+    
+    public function settings(Request $request)
+    {
+        $userId = Application::$app->session->get('user')['id'] ?? 0;
+        $vendor = $this->vendorRepository->findByUserId($userId);
+        
+        if (!$vendor) {
+            Application::$app->session->setFlash('error', 'Vendor profile not found');
+            Application::$app->response->redirect('/vendor/dashboard');
+            return;
+        }
+        
+        if ($request->isPost()) {
+            $data = $request->getBody();
+            
+            $success = $this->vendorRepository->update($vendor->id, [
+                'store_name' => $data['store_name'] ?? $vendor->store_name,
+                'description' => $data['description'] ?? $vendor->description
+            ]);
+            
+            if ($success) {
+                Application::$app->session->setFlash('success', 'Store settings updated successfully');
+                Application::$app->response->redirect('/vendor/settings');
+                return;
+            } else {
+                Application::$app->session->setFlash('error', 'Failed to update store settings');
+            }
+        }
+        
+        return $this->render('vendor/settings/index', [
+            'vendor' => $vendor,
+            'title' => 'Store Settings'
+        ]);
+    }
+}
