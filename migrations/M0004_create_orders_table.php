@@ -3,7 +3,7 @@
 use App\core\Application;
 use App\migrations\Migration;
 
-class M0005_create_orders_table extends Migration
+class M0004_create_orders_table extends Migration
 {
     public function up()
     {

@@ -4,7 +4,7 @@ use App\core\Application;
 use App\migrations\Migration;
 
 
-class M0004_create_products_table extends Migration
+class M0003_create_products_table extends Migration
 {
     public function up(): void  
     {
