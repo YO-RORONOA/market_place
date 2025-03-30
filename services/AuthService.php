@@ -5,28 +5,35 @@ namespace App\Services;
 use App\core\Application;
 use App\models\User;
 use App\models\UserStatus;
+use App\models\Role;
 use App\Repositories\UserRepository;
+use App\repositories\UserRoleRepository;
 use App\Services\EmailService;
 use App\services\TokenService;
 
 class AuthService
 {
     private UserRepository $userRepository;
+    private UserRoleRepository $userRoleRepository;
     private EmailService $emailService;
     private TokenService $tokenService;
-
 
     public function __construct()
     {
         $this->userRepository = new UserRepository();
+        $this->userRoleRepository = new UserRoleRepository();
         $this->emailService = new EmailService();
         $this->tokenService = new TokenService();
     }
 
-    public function register(array $userData): bool
+  
+    public function register(array $userData, int $roleId = Role::BUYER): bool|int
     {
         $user = new User();
         $user->loadData($userData);
+        
+        // Set the primary role for initial registration
+        $user->primary_role_id = $roleId;
 
         $token = $this->tokenService->generateEmailVerificationToken();
         $user->verification_token = $token;
@@ -35,14 +42,22 @@ class AuthService
         {
             $this->emailService->sendVerificationEmail($user, $token);
 
-            Application::$app->session->setFlash('sucess', 'Registration successful');
-            return true;
+            Application::$app->session->setFlash('success', 'Registration successful! Please check your email to verify your account.');
+            Application::$app->session->set('verification_email', $user->email);
+            
+            return $user->id;
         }
 
         return false;
-
     }
 
+    
+    public function addRoleToUser(int $userId, int $roleId): bool
+    {
+        return $this->userRoleRepository->addRoleToUser($userId, $roleId);
+    }
+
+    
     public function verifyEmail(string $token): bool
     {
         $user = $this->userRepository->findByVerificationToken($token);
@@ -65,8 +80,7 @@ class AuthService
         return false;
     }
 
-
-    public function login(string $email, string $password): bool
+    public function login(string $email, string $password, bool $rememberMe = false, ?int $requiredRole = null): bool
     {
         $user = $this->userRepository->findByEmail($email);
 
@@ -86,23 +100,59 @@ class AuthService
             Application::$app->session->setFlash('error', 'Your account is not active.');
             return false;
         }
+        
+        $user->loadRoles();
+        
+        if ($requiredRole !== null && !$user->hasRole($requiredRole)) {
+            Application::$app->session->setFlash('error', 'You do not have the required role to access this area.');
+            return false;
+        }
 
-        Application::$app->session->set('user',[
+        Application::$app->session->set('user', [
             'id' => $user->id, 
             'name' => $user->getDisplayName(),
             'email' => $user->email,
-            'role_id' => $user->role_id
+            'roles' => $user->roles, 
+            'active_role' => $requiredRole ?? $user->roles[0] ?? null 
         ]);
+        
         return true;
     }
 
+   
+    public function getUserByEmail(string $email): ?User
+    {
+        return $this->userRepository->findByEmail($email);
+    }
 
     public function logout(): void
     {
         Application::$app->session->remove('user');
     }
 
-    public function requestPasswordreset(string $email): bool
+    
+    public function switchActiveRole(int $roleId): bool
+    {
+        $userData = Application::$app->session->get('user');
+        
+        if (!$userData) {
+            return false;
+        }
+        
+        $userRoles = $userData['roles'] ?? [];
+        
+        if (!in_array($roleId, $userRoles)) {
+            return false;
+        }
+        
+        $userData['active_role'] = $roleId;
+        Application::$app->session->set('user', $userData);
+        
+        return true;
+    }
+
+ 
+    public function requestPasswordReset(string $email): bool
     {
         $user = $this->userRepository->findByEmail($email);
 
@@ -119,11 +169,9 @@ class AuthService
         
         Application::$app->session->setFlash('success', 'Password reset link sent to your email.');
         return true;
-
-        
     }
 
-
+  
     public function resetPassword(string $token, string $password): bool
     {
         $userId = $this->userRepository->findUserIdByPasswordResetToken($token);
@@ -144,8 +192,6 @@ class AuthService
         
         $user->password = $password;
         
-       
-        
         if ($this->userRepository->update($userId, [
             'password' => password_hash($password, PASSWORD_DEFAULT)
         ])) {
@@ -157,10 +203,22 @@ class AuthService
         
         return false;
     }
+    
+    
+    public function resendVerificationEmail(string $email): bool
+    {
+        $user = $this->userRepository->findByEmail($email);
+        
+        if (!$user || $user->isEmailVerified()) {
+            return false;
+        }
+        
+        $token = $this->tokenService->generateEmailVerificationToken();
+        
+        $this->userRepository->update($user->id, [
+            'verification_token' => $token
+        ]);
+        
+        return $this->emailService->sendVerificationEmail($user, $token);
+    }
 }
-    
-    
-
-
-
-

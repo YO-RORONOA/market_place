@@ -12,25 +12,27 @@ use App\models\PasswordResetForm;
 use App\services\AuthService;
 use App\services\EmailService;
 use App\services\TokenService;
+use App\models\Role;
+use App\Repositories\UserRepository;
 
 class AuthController extends Controller
 {
     private AuthService $authService;
     private EmailService $emailService;
+    private UserRepository $userRepository;
     
     public function __construct()
     {
         $this->setLayout('auth');
         $this->authService = new AuthService();
         $this->emailService = new EmailService();
+        $this->userRepository = new UserRepository();
         $this->registerMiddleware(new GuestMiddleware([
             'login', 'register', 'forgotPassword', 'resetPassword', 
             'emailVerificationPage', 'passwordResetSent']));
     }
     
-    /**
-     * Display the login page and handle login requests
-     */
+    
     public function login(Request $request)
     {
         $loginForm = new LoginForm();
@@ -51,20 +53,40 @@ class AuthController extends Controller
         ]);
     }
     
-    /**
-     * Display the registration page and handle registration requests
-     */
+    
     public function register(Request $request)
     {
         $user = new User();
         
         if ($request->isPost()) {
-            $user->loadData($request->getBody());
+            $userData = $request->getBody();
+            $user->loadData($userData);
             
-            if ($user->validate() && $this->authService->register($request->getBody())) {
-                Application::$app->session->setFlash('success', 'Thanks for registering! Please check your email to verify your account.');
-                Application::$app->response->redirect('/email-verification');
-                return;
+            $existingUser = $this->userRepository->findByEmail($user->email);
+            
+            if ($existingUser) {
+                $existingUser->loadRoles();
+                
+                if ($existingUser->hasRole(Role::BUYER)) {
+                    $user->addError('email', 'This email is already registered.');
+                } else {
+                    if ($this->authService->addRoleToUser($existingUser->id, Role::BUYER)) {
+                        Application::$app->session->setFlash('success', 'Your account has been updated with buyer privileges.');
+                        Application::$app->response->redirect('/login');
+                        return;
+                    } else {
+                        Application::$app->session->setFlash('error', 'Failed to update account.');
+                    }
+                }
+            } else {
+                $user->primary_role_id = Role::BUYER;
+                
+                if ($user->validate() && $this->authService->register($userData, Role::BUYER)) {
+                    Application::$app->session->setFlash('success', 'Thanks for registering! Please check your email to verify your account.');
+                    Application::$app->session->set('verification_email', $user->email);
+                    Application::$app->response->redirect('/email-verification');
+                    return;
+                }
             }
         }
         
@@ -74,9 +96,7 @@ class AuthController extends Controller
         ]);
     }
     
-    /**
-     * Handle user logout
-     */
+    
     public function logout()
     {
         $this->authService->logout();
@@ -84,15 +104,13 @@ class AuthController extends Controller
         Application::$app->response->redirect('/login');
     }
     
-    /**
-     * Display the email verification page (after registration)
-     */
+    
     public function emailVerificationPage()
     {
         // Get email from session if available
         $email = Application::$app->session->get('verification_email') ?? '';
         
-        return $this->render('auth/email-verification', [
+        return $this->render('auth/emailverification', [
             'email' => $email,
             'title' => 'Verify Your Email'
         ]);
@@ -105,9 +123,7 @@ class AuthController extends Controller
 
    
     
-    /**
-     * Handle email verification token
-     */
+    
     public function verifyEmail(Request $request)
     {
         $token = $request->getQuery('token') ?? '';
@@ -124,9 +140,7 @@ class AuthController extends Controller
         ]);
     }
     
-    /**
-     * Resend verification email
-     */
+    
     public function resendVerification(Request $request)
     {
         $email = $request->getBody()['email'] ?? Application::$app->session->get('verification_email') ?? '';
@@ -144,9 +158,7 @@ class AuthController extends Controller
         Application::$app->response->redirect('/email-verification');
     }
     
-    /**
-     * Display the forgot password page and handle password reset requests
-     */
+    
     public function forgotPassword(Request $request)
     {
         $model = new User();
@@ -171,9 +183,7 @@ class AuthController extends Controller
         ]);
     }
     
-    /**
-     * Display password reset sent confirmation page
-     */
+    
     public function passwordResetSent()
     {
         return $this->render('auth/passwordResetSent', [
@@ -181,9 +191,7 @@ class AuthController extends Controller
         ]);
     }
     
-    /**
-     * Display and handle password reset form
-     */
+   
     public function resetPassword(Request $request)
     {
         $token = $request->getQuery('token') ?? '';
@@ -214,9 +222,7 @@ class AuthController extends Controller
         ]);
     }
     
-    /**
-     * Display error page for invalid token
-     */
+   
     public function invalidToken()
     {
         return $this->render('auth/InvalidToken', [
