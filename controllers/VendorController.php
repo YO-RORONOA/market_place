@@ -99,7 +99,7 @@ class VendorController extends Controller
     public function products(Request $request)
     {
         $vendorId = Application::$app->session->get('user')['id'] ?? 0;
-        $page = (int)$request->getQuery('page', 1);
+        $page =  max(1, (int)$request->getQuery('page', 1));
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
@@ -107,7 +107,7 @@ class VendorController extends Controller
         $totalProducts = $this->productRepository->countProducts(['vendor_id' => $vendorId]);
         $totalPages = ceil($totalProducts / $limit);
 
-        return $this->render('vendor/products/index', [
+        return $this->render('seller/products/index', [
             'products' => $products,
             'currentPage' => $page,
             'totalPages' => $totalPages,
@@ -118,8 +118,9 @@ class VendorController extends Controller
     
     public function orders(Request $request)
     {
+        
         $vendorId = Application::$app->session->get('user')['id'] ?? 0;
-        $page = (int)$request->getQuery('page', 1);
+        $page = max(1, (int)$request->getQuery('page', 1));
         $status = $request->getQuery('status', '');
         $limit = 10;
         $offset = ($page - 1) * $limit;
@@ -134,7 +135,7 @@ class VendorController extends Controller
         $totalOrders = $this->countVendorOrders($vendorId, $conditions);
         $totalPages = ceil($totalOrders / $limit);
         
-        return $this->render('vendor/orders/index', [
+        return $this->render('seller/orders/index', [
             'orders' => $orders,
             'currentPage' => $page,
             'totalPages' => $totalPages,
@@ -186,7 +187,7 @@ class VendorController extends Controller
         
         $customer = $this->userRepository->findOne($order['user_id']);
         
-        return $this->render('vendor/orders/view', [
+        return $this->render('seller/orders/view', [
             'order' => $order,
             'items' => $vendorItems,
             'orderTotal' => $orderTotal,
@@ -313,71 +314,72 @@ class VendorController extends Controller
     }
     
     private function getVendorOrders($vendorId, $conditions = [], $limit = 10, $offset = 0)
-    {
-        $sql = "SELECT DISTINCT o.id
-                FROM orders o
-                JOIN order_items oi ON o.id = oi.order_id
-                JOIN products p ON oi.product_id = p.id
-                WHERE p.vendor_id = :vendor_id";
-        
-        if (!empty($conditions)) {
-            foreach ($conditions as $key => $value) {
-                $sql .= " AND o.$key = :$key";
-            }
+{
+    $sql = "SELECT DISTINCT o.id, o.created_at
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            WHERE p.vendor_id = :vendor_id";
+    
+    if (!empty($conditions)) {
+        foreach ($conditions as $key => $value) {
+            $sql .= " AND o.$key = :$key";
         }
-        
-        $sql .= " ORDER BY o.created_at DESC
-                  LIMIT :limit OFFSET :offset";
-        
-        $statement = Application::$app->db->pdo->prepare($sql);
-        $statement->bindValue(':vendor_id', $vendorId);
-        
-        if (!empty($conditions)) {
-            foreach ($conditions as $key => $value) {
-                $statement->bindValue(":$key", $value);
-            }
-        }
-        
-        $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
-        $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
-        $statement->execute();
-        
-        $orderIds = $statement->fetchAll(\PDO::FETCH_COLUMN);
-        
-        if (empty($orderIds)) {
-            return [];
-        }
-        
-        $orders = [];
-        foreach ($orderIds as $orderId) {
-            $order = $this->orderRepository->findOne($orderId);
-            if ($order) {
-                $items = $this->orderItemRepository->findByOrderId($orderId);
-                
-                $vendorItems = [];
-                $vendorTotal = 0;
-                
-                foreach ($items as $item) {
-                    $product = $this->productRepository->findOne($item['product_id']);
-                    
-                    if ($product && $product['vendor_id'] == $vendorId) {
-                        $item['product'] = $product;
-                        $vendorItems[] = $item;
-                        $vendorTotal += $item['price'] * $item['quantity'];
-                    }
-                }
-                
-                $order['vendor_items'] = $vendorItems;
-                $order['vendor_total'] = $vendorTotal;
-                
-                $order['customer'] = $this->userRepository->findOne($order['user_id']);
-                
-                $orders[] = $order;
-            }
-        }
-        
-        return $orders;
     }
+    
+    $sql .= " ORDER BY o.created_at DESC
+              LIMIT :limit OFFSET :offset";
+    
+    $statement = Application::$app->db->pdo->prepare($sql);
+    $statement->bindValue(':vendor_id', $vendorId);
+    
+    if (!empty($conditions)) {
+        foreach ($conditions as $key => $value) {
+            $statement->bindValue(":$key", $value);
+        }
+    }
+    
+    $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
+    $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
+    $statement->execute();
+    
+    $results = $statement->fetchAll(\PDO::FETCH_ASSOC);
+    $orderIds = array_column($results, 'id');
+    
+    if (empty($orderIds)) {
+        return [];
+    }
+    
+    $orders = [];
+    foreach ($orderIds as $orderId) {
+        $order = $this->orderRepository->findOne($orderId);
+        if ($order) {
+            $items = $this->orderItemRepository->findByOrderId($orderId);
+            
+            $vendorItems = [];
+            $vendorTotal = 0;
+            
+            foreach ($items as $item) {
+                $product = $this->productRepository->findOne($item['product_id']);
+                
+                if ($product && $product['vendor_id'] == $vendorId) {
+                    $item['product'] = $product;
+                    $vendorItems[] = $item;
+                    $vendorTotal += $item['price'] * $item['quantity'];
+                }
+            }
+            
+            $order['vendor_items'] = $vendorItems;
+            $order['vendor_total'] = $vendorTotal;
+            
+            $order['customer'] = $this->userRepository->findOne($order['user_id']);
+            
+            $orders[] = $order;
+        }
+    }
+    
+    return $orders;
+}
     
     private function countVendorOrders($vendorId, $conditions = [])
     {
@@ -429,7 +431,7 @@ class VendorController extends Controller
         $product = new Product();
         $categories = $this->categoryRepository->findAll();
 
-        return $this->render('vendor/products/create',
+        return $this->render('seller/products/create',
         [
             'model' => $product,
             'categories' => $categories,
@@ -467,7 +469,7 @@ class VendorController extends Controller
 
             $categories = $this->categoryRepository->findAll();
         
-            return $this->render('vendor/products/create', [
+            return $this->render('seller/products/create', [
                 'model' => $product,
                 'categories' => $categories,
                 'title' => 'Create New Product'
@@ -498,7 +500,7 @@ class VendorController extends Controller
         $product->loadData($productData);
         $categories = $this->categoryRepository->findAll();
         
-        return $this->render('vendor/products/edit', [
+        return $this->render('seller/products/edit', [
             'model' => $product,
             'categories' => $categories,
             'title' => 'Edit Product'
