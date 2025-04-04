@@ -13,6 +13,7 @@ use App\services\TokenService;
 
 class AuthService
 {
+    private const CART_SESSION_KEY = 'cart_items';
     private UserRepository $userRepository;
     private UserRoleRepository $userRoleRepository;
     private EmailService $emailService;
@@ -32,7 +33,6 @@ class AuthService
         $user = new User();
         $user->loadData($userData);
         
-        // Set the primary role for initial registration
         $user->primary_role_id = $roleId;
 
         $token = $this->tokenService->generateEmailVerificationToken();
@@ -83,19 +83,19 @@ class AuthService
     public function login(string $email, string $password, bool $rememberMe = false, ?int $requiredRole = null): bool
     {
         $user = $this->userRepository->findByEmail($email);
-
+    
         if(!$user || !password_verify($password, $user->password))
         {
             Application::$app->session->setFlash('error', 'Invalid email or password.');
             return false;
         }
-
+    
         if(!$user->isEmailVerified())
         {
             Application::$app->session->setFlash('error', 'Please verify your email before logging in.');
             return false;
         }
-
+    
         if (!$user->isActive()) {
             Application::$app->session->setFlash('error', 'Your account is not active.');
             return false;
@@ -107,7 +107,7 @@ class AuthService
             Application::$app->session->setFlash('error', 'You do not have the required role to access this area.');
             return false;
         }
-
+    
         Application::$app->session->set('user', [
             'id' => $user->id, 
             'name' => $user->getDisplayName(),
@@ -115,6 +115,9 @@ class AuthService
             'roles' => $user->roles, 
             'active_role' => $requiredRole ?? $user->roles[0] ?? null 
         ]);
+        
+        $cartService = new \App\services\CartService();
+        $cartService->initializeUserCart($user->id);
         
         return true;
     }
@@ -127,7 +130,9 @@ class AuthService
 
     public function logout(): void
     {
+        Application::$app->session->remove(self::CART_SESSION_KEY);
         Application::$app->session->remove('user');
+    
     }
 
     
