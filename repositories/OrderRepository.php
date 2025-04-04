@@ -94,4 +94,29 @@ class OrderRepository extends Repository
         
         return (int) $statement->fetchColumn();
     }
+
+
+    public function count(array $conditions = []): int
+{
+    $sql = "SELECT COUNT(*) FROM {$this->table} WHERE deleted_at IS NULL";
+    $params = [];
+    
+    if (!empty($conditions)) {
+        foreach ($conditions as $key => $value) {
+            $sql .= " AND $key = :$key";
+            $params[":$key"] = $value;
+        }
+    }
+    
+    $statement = $this->db->pdo->prepare($sql);
+    
+    foreach ($params as $key => $value) {
+        $statement->bindValue($key, $value);
+    }
+    
+    $statement->execute();
+    return (int)$statement->fetchColumn();
 }
+}
+
+
