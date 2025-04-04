@@ -10,11 +10,14 @@ use App\services\CartService;
 class CartController extends Controller
 {
     private CartService $cartService;
+    private Request $request;
+
     
     public function __construct()
     {
         parent::__construct();
         $this->cartService = new CartService();
+        $this->request = new Request();
     }
     
     public function index()
