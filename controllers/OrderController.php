@@ -64,3 +64,84 @@ class OrderController extends Controller
     }
     
     
+    public function ajax(Request $request)
+    {
+        $userId = Application::$app->session->get('user')['id'] ?? 0;
+        
+        if (!$userId) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized']);
+            return;
+        }
+        
+        $statusFilter = $request->getQuery('status') ?? '';
+        
+        $conditions = ['user_id' => $userId];
+        if (!empty($statusFilter)) {
+            $conditions['status'] = $statusFilter;
+        }
+        
+        $orders = $this->orderRepository->findAll($conditions, false, 'created_at DESC');
+        
+        foreach ($orders as &$order) {
+            $order['items'] = $this->orderItemRepository->findByOrderId($order['id']);
+        }
+        
+        header('Content-Type: application/json');
+        echo json_encode([
+            'orders' => $orders,
+            'totalCount' => count($orders),
+            'status' => $statusFilter
+        ]);
+        exit;
+    }
+    
+ 
+    public function view(Request $request)
+    {
+        $userId = Application::$app->session->get('user')['id'] ?? 0;
+        
+        if (!$userId) {
+            Application::$app->session->setFlash('error', 'You must be logged in to view orders');
+            Application::$app->response->redirect('/login');
+            return;
+        }
+        
+        $orderId = (int)$request->getQuery('id');
+        
+        if (!$orderId) {
+            Application::$app->session->setFlash('error', 'Invalid order ID');
+            Application::$app->response->redirect('/orders');
+            return;
+        }
+        
+        $order = $this->orderRepository->findOne($orderId);
+        
+        if (!$order || $order['user_id'] != $userId) {
+            Application::$app->session->setFlash('error', 'Order not found or you do not have permission to view it');
+            Application::$app->response->redirect('/orders');
+            return;
+        }
+        
+        $items = $this->orderItemRepository->findByOrderId($orderId);
+        
+        return $this->render('orders/view', [
+            'order' => $order,
+            'items' => $items,
+            'title' => 'Order #' . $orderId
+        ]);
+    }
+    
+  
+    private function getAvailableOrderStatuses(): array
+    {
+        return [
+            'pending' => 'Pending',
+            'processing' => 'Processing',
+            'paid' => 'Paid',
+            'shipped' => 'Shipped',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled'
+        ];
+    }
+}
