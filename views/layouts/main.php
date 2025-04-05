@@ -56,7 +56,38 @@
                     <li><a href="/" class="text-gray-600 hover:text-accent-teal transition">Home</a></li>
                     <li><a href="/products" class="text-gray-600 hover:text-accent-teal transition">Shop</a></li>
                     <?php if (isset($_SESSION['user'])): ?>
-                        <li><a href="/profile" class="text-gray-600 hover:text-accent-teal transition">My Account</a></li>
+                        <?php 
+                            $userData = $_SESSION['user'];
+                            $roles = $userData['roles'] ?? [];
+                            $activeRole = $userData['active_role'] ?? null;
+                            $hasVendorRole = in_array(\App\models\Role::VENDOR, $roles);
+                            $hasBuyerRole = in_array(\App\models\Role::BUYER, $roles);
+                            $isVendorActive = $activeRole === \App\models\Role::VENDOR;
+                        ?>
+                        
+                        <?php if ($hasVendorRole && !$isVendorActive): ?>
+                            <li>
+                                <a href="/vendor/switch" class="text-accent-ochre hover:text-accent-terracotta transition">
+                                    Switch to Vendor
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                        
+                        <?php if ($isVendorActive): ?>
+                            <li>
+                                <a href="/vendor/dashboard" class="text-accent-teal hover:text-accent-navy transition">
+                                    Vendor Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/buyer/switch" class="text-accent-ochre hover:text-accent-terracotta transition">
+                                    Switch to Buyer
+                                </a>
+                            </li>
+                        <?php else: ?>
+                            <li><a href="/profile" class="text-gray-600 hover:text-accent-teal transition">My Account</a></li>
+                        <?php endif; ?>
+                        
                         <li><a href="/logout" class="text-gray-600 hover:text-accent-teal transition">Logout</a></li>
                     <?php else: ?>
                         <li><a href="/login" class="text-gray-600 hover:text-accent-teal transition">Login</a></li>
@@ -135,10 +166,8 @@
             </div>
         </div>
     </footer>
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/cart.js"></script>
-    <script src="assets/js/products.js"></script>
-    <!-- <script > console.log('test')</script> -->
-
+    <script src="/assets/js/app.js"></script>
+    <script src="/assets/js/cart.js"></script>
+    <script src="/assets/js/products.js"></script>
 </body>
 </html>

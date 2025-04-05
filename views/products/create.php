@@ -238,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Generate description with AI
     const generateDescBtn = document.getElementById('generateDescription');
     const descriptionField = document.getElementById('description');
     const nameField = document.getElementById('name');

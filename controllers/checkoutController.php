@@ -9,7 +9,8 @@ use App\core\middlewares\AuthMiddleware;
 use App\services\CartService;
 use App\services\PaymentService;
 use App\services\OrderService;
-use App\Repositories\UserRepository;
+use App\repositories\UserRepository;
+use App\helpers\StripeDebugHelper;
 
 class CheckoutController extends Controller
 {
@@ -26,13 +27,10 @@ class CheckoutController extends Controller
         $this->orderService = new OrderService();
         $this->userRepository = new UserRepository();
         
-        // Require authentication for all checkout actions
         $this->registerMiddleware(new AuthMiddleware());
     }
     
-    /**
-     * Display checkout page
-     */
+    
     public function index()
     {
         $cartItems = $this->cartService->getCartItems();
@@ -51,9 +49,7 @@ class CheckoutController extends Controller
         ]);
     }
     
-    /**
-     * Process checkout and redirect to Stripe
-     */
+    
     public function process(Request $request)
     {
         if (!$request->isPost()) {
@@ -69,7 +65,6 @@ class CheckoutController extends Controller
             return;
         }
         
-        // Get current user
         $userId = Application::$app->session->get('user')['id'] ?? 0;
         $userData = $this->userRepository->findOne($userId);
         
@@ -83,11 +78,9 @@ class CheckoutController extends Controller
         $user->loadData($userData);
         
         try {
-            // Success and cancel URLs
             $successUrl = Application::$app->request->getHostInfo() . '/checkout/success?session_id={CHECKOUT_SESSION_ID}';
             $cancelUrl = Application::$app->request->getHostInfo() . '/checkout/cancel';
             
-            // Create Stripe checkout session
             $checkoutUrl = $this->paymentService->createCheckoutSession(
                 $cartItems,
                 $user,
@@ -95,20 +88,17 @@ class CheckoutController extends Controller
                 $cancelUrl
             );
             
-            // Redirect to Stripe checkout
             Application::$app->response->redirect($checkoutUrl);
         } catch (\Exception $e) {
+            error_log("Checkout error: " . $e->getMessage());
             Application::$app->session->setFlash('error', $e->getMessage());
             Application::$app->response->redirect('/checkout');
         }
     }
     
-    /**
-     * Handle successful checkout
-     */
+   
     public function success(Request $request)
     {
-        // Get session ID from URL
         $sessionId = $request->getQuery('session_id') ?? '';
         
         if (empty($sessionId)) {
@@ -117,15 +107,62 @@ class CheckoutController extends Controller
             return;
         }
         
+        $order = $this->verifyOrder($sessionId);
+
+        $this->cartService->clearCart();
+
+        
         return $this->render('checkout/success', [
             'sessionId' => $sessionId,
+            'order' => $order,
             'title' => 'Order Confirmation'
         ]);
     }
     
-    /**
-     * Handle cancelled checkout
-     */
+    
+    private function verifyOrder(string $sessionId): ?array
+    {
+        $orderRepo = new \App\repositories\OrderRepository();
+        $order = $orderRepo->findByPaymentIntentId($sessionId);
+        
+        if ($order) {
+            return $this->orderService->getOrderById($order['id']);
+        }
+        
+        try {
+            $userId = Application::$app->session->get('user')['id'] ?? 0;
+            
+            if (!$userId) {
+                error_log("No user ID found in session during order verification");
+                return null;
+            }
+            
+         
+            $totalAmount = $this->cartService->getCartTotal();
+            
+            $this->orderService->createOrderFromCheckout(
+                $userId,
+                $sessionId,
+                $totalAmount,
+                null 
+            );
+            
+            $order = $orderRepo->findByPaymentIntentId($sessionId);
+            
+            if ($order) {
+                error_log("Created order manually during verification for session: $sessionId");
+                return $this->orderService->getOrderById($order['id']);
+            }
+            
+            error_log("Failed to create order during verification for session: $sessionId");
+            return null;
+        } catch (\Exception $e) {
+            error_log("Error verifying order: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+   
     public function cancel()
     {
         Application::$app->session->setFlash('info', 'Your order was cancelled');
@@ -135,29 +172,65 @@ class CheckoutController extends Controller
         ]);
     }
     
-    /**
-     * Handle Stripe webhooks
-     */
+    
     public function webhook(Request $request)
     {
-        // Get the request payload and Stripe signature
         $payload = file_get_contents('php://input');
         $sigHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
         
-        if (empty($payload) || empty($sigHeader)) {
+        StripeDebugHelper::logWebhookRequest($_SERVER, $payload);
+        
+        if (empty($payload)) {
+            error_log("Webhook Error: Empty payload");
             http_response_code(400);
             exit();
         }
         
-        // Handle the webhook
+        if (empty($sigHeader)) {
+            error_log("Webhook Error: Missing Stripe signature header");
+            http_response_code(400);
+            exit();
+        }
+        
         $success = $this->paymentService->handleWebhook($payload, $sigHeader);
         
         if (!$success) {
+            error_log("Webhook Error: Failed to process webhook");
             http_response_code(400);
             exit();
         }
         
         http_response_code(200);
         exit();
+    }
+    
+   
+    public function testWebhook(Request $request)
+    {
+        if (!Application::$app->session->get('user')) {
+            Application::$app->session->setFlash('error', 'You must be logged in to test webhooks');
+            Application::$app->response->redirect('/login');
+            return;
+        }
+        
+        if ($_ENV['APP_ENV'] !== 'development') {
+            Application::$app->response->statusCode(404);
+            return $this->render('_error', ['message' => 'Page not found']);
+        }
+        
+        $userId = Application::$app->session->get('user')['id'];
+        $cartTotal = $this->cartService->getCartTotal();
+        
+        $event = StripeDebugHelper::generateCheckoutSessionCompletedEvent($userId, $cartTotal);
+        
+        $success = StripeDebugHelper::processTestEvent($event);
+        
+        if ($success) {
+            Application::$app->session->setFlash('success', 'Test webhook processed successfully');
+        } else {
+            Application::$app->session->setFlash('error', 'Failed to process test webhook');
+        }
+        
+        Application::$app->response->redirect('/orders');
     }
 }
