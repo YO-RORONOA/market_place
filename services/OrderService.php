@@ -5,6 +5,7 @@ namespace App\services;
 use App\core\Application;
 use App\repositories\OrderRepository;
 use App\repositories\OrderItemRepository;
+use App\models\CartItem;
 
 class OrderService
 {
@@ -30,24 +31,20 @@ class OrderService
      */
     public function createOrderFromCheckout(int $userId, string $paymentIntentId, float $totalAmount, ?object $shippingAddress): bool
     {
-        // Format address
-        $addressString = '';
-        if ($shippingAddress) {
-            $addressString = implode(', ', [
-                $shippingAddress->line1 ?? '',
-                $shippingAddress->line2 ?? '',
-                $shippingAddress->city ?? '',
-                $shippingAddress->state ?? '',
-                $shippingAddress->postal_code ?? '',
-                $shippingAddress->country ?? ''
+        $addressString = $this->formatShippingAddress($shippingAddress);
+        
+        $existingOrder = $this->orderRepository->findByPaymentIntentId($paymentIntentId);
+        if ($existingOrder) {
+            return $this->orderRepository->update($existingOrder['id'], [
+                'status' => 'processing',
+                'shipping_address' => $addressString
             ]);
         }
         
-        // Create order
         $orderData = [
             'user_id' => $userId,
             'total_amount' => $totalAmount,
-            'status' => 'pending',
+            'status' => 'processing',
             'payment_intent_id' => $paymentIntentId,
             'payment_method' => 'stripe',
             'shipping_address' => $addressString
@@ -59,24 +56,66 @@ class OrderService
             return false;
         }
         
-        // Add order items
         $cartItems = $this->cartService->getCartItems();
+        $success = $this->addItemsToOrder($orderId, $cartItems);
         
-        foreach ($cartItems as $item) {
-            $orderItemData = [
-                'order_id' => $orderId,
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'price' => $item->price
-            ];
-            
-            $this->orderItemRepository->create($orderItemData);
+        if (!$success) {
+            return false;
         }
         
-        // Clear the cart
         $this->cartService->clearCart();
         
         return true;
+    }
+    
+    /**
+     * Add items to an order
+     *
+     * @param int $orderId The order ID
+     * @param array $items Array of CartItem objects
+     * @return bool Success status
+     */
+    public function addItemsToOrder(int $orderId, array $items): bool
+    {
+        if (empty($items)) {
+            return true;
+        }
+        
+        $existingItems = $this->orderItemRepository->findByOrderId($orderId);
+        if (!empty($existingItems)) {
+            return true;
+        }
+        
+        $success = true;
+        
+        $sql = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ";
+        $values = [];
+        $params = [];
+        
+        foreach ($items as $index => $item) {
+            $paramPrefix = "i" . $index;
+            $values[] = "(:order_id, :{$paramPrefix}_product_id, :{$paramPrefix}_quantity, :{$paramPrefix}_price)";
+            $params["{$paramPrefix}_product_id"] = $item->product_id;
+            $params["{$paramPrefix}_quantity"] = $item->quantity;
+            $params["{$paramPrefix}_price"] = $item->price;
+        }
+        
+        $sql .= implode(", ", $values);
+        
+        try {
+            $statement = Application::$app->db->pdo->prepare($sql);
+            $statement->bindValue(':order_id', $orderId, \PDO::PARAM_INT);
+            
+            foreach ($params as $key => $value) {
+                $statement->bindValue(":{$key}", $value);
+            }
+            
+            $success = $statement->execute();
+        } catch (\Exception $e) {
+            $success = false;
+        }
+        
+        return $success;
     }
     
     /**
@@ -94,7 +133,33 @@ class OrderService
             return false;
         }
         
-        return $this->orderRepository->update($order['id'], ['status' => $status]);
+        $result = $this->orderRepository->update($order['id'], ['status' => $status]);
+        
+        return $result;
+    }
+    
+    /**
+     * Format shipping address for storage
+     *
+     * @param object|null $address Address object from Stripe
+     * @return string Formatted address
+     */
+    private function formatShippingAddress(?object $address): string
+    {
+        if (!$address) {
+            return "No shipping address provided";
+        }
+        
+        $addressParts = [];
+        
+        if (!empty($address->line1)) $addressParts[] = $address->line1;
+        if (!empty($address->line2)) $addressParts[] = $address->line2;
+        if (!empty($address->city)) $addressParts[] = $address->city;
+        if (!empty($address->state)) $addressParts[] = $address->state;
+        if (!empty($address->postal_code)) $addressParts[] = $address->postal_code;
+        if (!empty($address->country)) $addressParts[] = $address->country;
+        
+        return !empty($addressParts) ? implode(', ', $addressParts) : "Address details not available";
     }
     
     /**
@@ -111,21 +176,94 @@ class OrderService
             return null;
         }
         
-        // Get order items
         $orderItems = $this->orderItemRepository->findByOrderId($orderId);
         $order['items'] = $orderItems;
         
         return $order;
     }
     
-    /**
-     * Get orders by user ID
-     *
-     * @param int $userId User ID
-     * @return array
-     */
     public function getOrdersByUserId(int $userId): array
     {
-        return $this->orderRepository->findAll(['user_id' => $userId]);
+        $orders = $this->orderRepository->findAll(['user_id' => $userId], false, 'created_at DESC');
+        
+        foreach ($orders as &$order) {
+            $order['items'] = $this->orderItemRepository->findByOrderId($order['id']);
+        }
+        
+        return $orders;
+    }
+   
+    public function getOrdersByVendorId(int $vendorId): array
+    {
+        $sql = "SELECT DISTINCT o.id
+                FROM orders o
+                JOIN order_items oi ON o.id = oi.order_id
+                JOIN products p ON oi.product_id = p.id
+                WHERE p.vendor_id = :vendor_id AND o.deleted_at IS NULL
+                ORDER BY o.created_at DESC";
+                
+        $statement = Application::$app->db->pdo->prepare($sql);
+        $statement->bindValue(':vendor_id', $vendorId, \PDO::PARAM_INT);
+        $statement->execute();
+        
+        $orderIds = $statement->fetchAll(\PDO::FETCH_COLUMN);
+        
+        if (empty($orderIds)) {
+            return [];
+        }
+        
+        $orders = [];
+        
+        foreach ($orderIds as $orderId) {
+            $order = $this->getOrderById($orderId);
+            
+            if ($order) {
+                $order['items'] = array_filter($order['items'], function($item) use ($vendorId) {
+                    $productRepo = new \App\repositories\ProductRepository();
+                    $product = $productRepo->findOne($item['product_id']);
+                    return $product && $product['vendor_id'] == $vendorId;
+                });
+                
+                $vendorTotal = 0;
+                foreach ($order['items'] as $item) {
+                    $vendorTotal += $item['price'] * $item['quantity'];
+                }
+                
+                $order['vendor_total'] = $vendorTotal;
+                $orders[] = $order;
+            }
+        }
+        
+        return $orders;
+    }
+    
+    public function getOrderStatistics(): array
+    {
+        $totalOrders = $this->orderRepository->count();
+        
+        $pendingOrders = $this->orderRepository->countByStatus('pending');
+        $processingOrders = $this->orderRepository->countByStatus('processing');
+        $paidOrders = $this->orderRepository->countByStatus('paid');
+        $failedOrders = $this->orderRepository->countByStatus('failed');
+        
+        $sql = "SELECT SUM(total_amount) FROM orders WHERE status = 'paid' AND deleted_at IS NULL";
+        $totalRevenue = Application::$app->db->pdo->query($sql)->fetchColumn() ?: 0;
+        
+        $recentOrders = $this->orderRepository->findAll(
+            ['status' => 'paid'], 
+            false, 
+            'created_at DESC', 
+            5
+        );
+        
+        return [
+            'totalOrders' => $totalOrders,
+            'pendingOrders' => $pendingOrders,
+            'processingOrders' => $processingOrders,
+            'paidOrders' => $paidOrders,
+            'failedOrders' => $failedOrders,
+            'totalRevenue' => $totalRevenue,
+            'recentOrders' => $recentOrders
+        ];
     }
 }
