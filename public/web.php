@@ -4,6 +4,7 @@
  use App\controllers\SiteController;
  use App\core\Application;
  use App\controllers\AuthController;
+use App\controllers\VendorAuthController;
 use App\controllers\VendorController;
 
 require_once __DIR__.'/../vendor/autoload.php';
@@ -91,6 +92,11 @@ $app->router->get('/test/load-cart', [App\controllers\TestController::class, 'lo
 
 
 
+$app->router->get('/vendor/login', [VendorAuthController::class, 'login']);
+$app->router->post('/vendor/login', [VendorAuthController::class, 'login']);
+$app->router->get('/vendor/register', [VendorAuthController::class, 'register']);
+$app->router->post('/vendor/register', [VendorAuthController::class, 'register']);
+
 
 
 
@@ -102,9 +108,23 @@ $app->router->post('/vendor/products/store', [VendorController::class, 'storePro
 $app->router->get('/vendor/products/edit', [VendorController::class, 'editProduct']);
 $app->router->post('/vendor/products/update', [VendorController::class, 'updateProduct']);
 $app->router->get('/vendor/products/delete', [VendorController::class, 'deleteProduct']);
+// $app->router->get('/vendor/products/index', [VendorController::class, 'deleteProduct']);
 $app->router->post('/vendor/products/generate-description', [VendorController::class, 'generateDescription']);
 $app->router->post('/vendor/products/generate-tags', [VendorController::class, 'generateTags']);
+$app->router->get('/vendor/orders', [VendorController::class, 'orders']);
 
+
+
+$app->router->get('/vendor/switch', [VendorAuthController::class, 'switchToVendor']);
+$app->router->get('/buyer/switch', [VendorAuthController::class, 'switchToBuyer']);
+
+
+
+
+$app->router->get('/orders', [App\controllers\OrderController::class, 'index']);
+$app->router->get('/orders/view', [App\controllers\OrderController::class, 'view']);
+$app->router->get('/orders/ajax', [App\controllers\OrderController::class, 'ajax']);
+$app->router->get('/orders/cancel', [App\controllers\OrderController::class, 'cancel']);
 
 
 $app->run();

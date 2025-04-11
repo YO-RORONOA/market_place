@@ -304,4 +304,99 @@ class PaymentService
     {
         error_log('[WARNING] ' . $message);
     }
+
+
+    public function processRefund(string $paymentIntentId, float $amount = null): bool
+    {
+        try {
+            error_log("Starting refund process for: " . $paymentIntentId);
+            
+            // Initialize Stripe
+            Stripe::setApiKey($this->apiKey);
+            
+            // Check if this is a checkout session ID
+            if (strpos($paymentIntentId, 'cs_') === 0) {
+                error_log("Detected checkout session ID, retrieving session");
+                try {
+                    $session = \Stripe\Checkout\Session::retrieve($paymentIntentId);
+                    $paymentIntentId = $session->payment_intent;
+                    error_log("Retrieved payment intent ID: " . $paymentIntentId);
+                } catch (\Exception $e) {
+                    error_log("Error retrieving checkout session: " . $e->getMessage());
+                    return false;
+                }
+            }
+            
+            // Make sure we have a payment intent ID
+            if (empty($paymentIntentId)) {
+                error_log("Cannot process refund: No payment intent ID found");
+                return false;
+            }
+            
+            // Create the refund
+            $refundParams = [
+                'payment_intent' => $paymentIntentId,
+                'reason' => 'requested_by_customer',
+            ];
+            
+            // Only specify amount if provided
+            if ($amount !== null) {
+                $refundParams['amount'] = (int)($amount * 100); // Convert to cents
+                error_log("Refunding specific amount: " . (int)($amount * 100) . " cents");
+            } else {
+                error_log("Refunding full amount");
+            }
+            
+            $refund = \Stripe\Refund::create($refundParams);
+            
+            error_log("Refund processed successfully: " . $refund->id);
+            return true;
+        } catch (\Exception $e) {
+            error_log("Error processing refund: " . $e->getMessage());
+            if ($e instanceof \Stripe\Exception\ApiErrorException) {
+                error_log("Stripe error details: " . json_encode($e->getJsonBody()));
+            }
+            return false;
+        }
+    }
+public function testRefund(): bool
+{
+    try {
+        // Initialize Stripe
+        Stripe::setApiKey($this->apiKey);
+        
+        // Use a real checkout session ID from your order
+        $checkoutSessionId = "cs_test_a1Ij1OjmkSPbEXhcRG9eM0IV2aEccvgb1LjYm9rMozL7kZZbgLb788h7eR";
+        
+        error_log("Retrieving session: " . $checkoutSessionId);
+        
+        // Retrieve the checkout session to get its payment intent
+        $session = \Stripe\Checkout\Session::retrieve($checkoutSessionId);
+        
+        // Get the payment intent ID from the session
+        $paymentIntentId = $session->payment_intent;
+        error_log("Got payment intent ID: " . $paymentIntentId);
+        
+        if (empty($paymentIntentId)) {
+            error_log("No payment intent found in checkout session");
+            return false;
+        }
+        
+        // Create the refund using the payment intent ID
+        error_log("Creating refund for payment intent: " . $paymentIntentId);
+        $refund = \Stripe\Refund::create([
+            'payment_intent' => $paymentIntentId,
+            'reason' => 'requested_by_customer',
+        ]);
+        
+        error_log("Refund created: " . $refund->id);
+        return true;
+    } catch (\Exception $e) {
+        error_log("Error in test refund: " . $e->getMessage());
+        if ($e instanceof \Stripe\Exception\ApiErrorException) {
+            error_log("Stripe error details: " . json_encode($e->getJsonBody()));
+        }
+        return false;
+    }
+}
 }
