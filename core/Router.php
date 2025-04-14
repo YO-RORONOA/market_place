@@ -53,7 +53,7 @@ class Router
             // return 'Not Found';
           
         
-         print_r($this->routeMap)  ;
+        //  print_r($this->routeMap)  ;
         
         }
         if (is_string($callback)) {
@@ -76,7 +76,7 @@ class Router
 
     public function renderView($view, $params = [])
     {
-        $layoutName = Application::$app->controller->layout;
+        $layoutName = Application::$app->controller ? Application::$app->controller->layout : 'main';
         $viewContent = $this->renderViewOnly($view, $params);
         ob_start();
         include_once Application::$ROOT_DIR."/views/layouts/$layoutName.php";
