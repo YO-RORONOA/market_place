@@ -23,7 +23,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
 {
-    $page = (int)$request->getQuery('page', 1);
+    $page = max(1, (int)$request->getQuery('page', 1));
     $limit = 12;
     $offset = ($page -1) * $limit;
 
@@ -55,11 +55,10 @@ class ProductController extends Controller
     $totalPages = ceil($totalProducts/ $limit);
     $categories = $this->categoryRepository->getMainCategories();
     
-    // If this is an AJAX request, return JSON response
     if ($request->isXhr()) {
         echo json_encode([
             'success' => true,
-            'products' => $products,  // Return raw product data instead of HTML
+            'products' => $products, 
             'totalProducts' => $totalProducts,
             'currentPage' => $page,
             'totalPages' => $totalPages,

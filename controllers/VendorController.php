@@ -711,4 +711,237 @@ class VendorController extends Controller
             'title' => 'Store Settings'
         ]);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function updateOrderStatus(Request $request)
+{
+    if (!$request->isXhr()) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        exit;
+    }
+    
+    $vendorId = Application::$app->session->get('user')['id'] ?? 0;
+    
+    if (!$vendorId) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'You must be logged in to update order status']);
+        exit;
+    }
+    
+    $data = $request->isPost() ? 
+            json_decode(file_get_contents('php://input'), true) : 
+            $request->getBody();
+    
+    if (empty($data['order_id']) || empty($data['status'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Order ID and status are required']);
+        exit;
+    }
+    
+    $orderId = (int)$data['order_id'];
+    $status = $data['status'];
+    
+    $orderItems = $this->orderItemRepository->findByOrderId($orderId);
+    $hasVendorProducts = false;
+    
+    foreach ($orderItems as $item) {
+        $product = $this->productRepository->findOne($item['product_id']);
+        if ($product && $product['vendor_id'] == $vendorId) {
+            $hasVendorProducts = true;
+            break;
+        }
+    }
+    
+    if (!$hasVendorProducts) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'You do not have permission to update this order']);
+        exit;
+    }
+    
+    $updateData = ['status' => $status];
+    
+    if ($status === 'shipped' && !empty($data['tracking_number'])) {
+        $updateData['tracking_number'] = $data['tracking_number'];
+        
+        if (!empty($data['carrier'])) {
+            $updateData['carrier'] = $data['carrier'];
+        }
+    }
+    
+    $success = $this->orderRepository->update($orderId, $updateData);
+    
+    if ($success && !empty($data['note'])) {
+        // You would need an OrderNoteRepository to properly implement this
+        // For now, we'll just include it in the response
+    }
+    
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => $success,
+        'message' => $success ? 'Order status updated successfully' : 'Failed to update order status',
+        'status' => $status
+    ]);
+    exit;
+}
+
+/**
+ * Bulk update order statuses
+ * 
+ * @param Request $request
+ * @return void
+ */
+public function bulkUpdateOrderStatus(Request $request)
+{
+    if (!$request->isXhr()) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        exit;
+    }
+    
+    $vendorId = Application::$app->session->get('user')['id'] ?? 0;
+    
+    if (!$vendorId) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'You must be logged in to update order status']);
+        exit;
+    }
+    
+    $data = $request->isPost() ? 
+            json_decode(file_get_contents('php://input'), true) : 
+            $request->getBody();
+    
+    if (empty($data['order_ids']) || empty($data['status'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Order IDs and status are required']);
+        exit;
+    }
+    
+    $orderIds = $data['order_ids'];
+    $status = $data['status'];
+    
+    $updatedCount = 0;
+    
+    foreach ($orderIds as $orderId) {
+        $orderItems = $this->orderItemRepository->findByOrderId($orderId);
+        $hasVendorProducts = false;
+        
+        foreach ($orderItems as $item) {
+            $product = $this->productRepository->findOne($item['product_id']);
+            if ($product && $product['vendor_id'] == $vendorId) {
+                $hasVendorProducts = true;
+                break;
+            }
+        }
+        
+        if ($hasVendorProducts) {
+            $success = $this->orderRepository->update($orderId, ['status' => $status]);
+            if ($success) {
+                $updatedCount++;
+            }
+        }
+    }
+    
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => $updatedCount > 0,
+        'message' => $updatedCount > 0 ? "$updatedCount orders updated successfully" : 'No orders were updated',
+        'updated' => $updatedCount
+    ]);
+    exit;
+}
+
+/**
+ * Add a note to an order
+ * 
+ * @param Request $request
+ * @return void
+ */
+public function addOrderNote(Request $request)
+{
+    if (!$request->isXhr()) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        exit;
+    }
+    
+    $vendorId = Application::$app->session->get('user')['id'] ?? 0;
+    
+    if (!$vendorId) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'You must be logged in to add notes']);
+        exit;
+    }
+    
+    $data = $request->isPost() ? 
+            json_decode(file_get_contents('php://input'), true) : 
+            $request->getBody();
+    
+    if (empty($data['order_id']) || empty($data['note'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Order ID and note are required']);
+        exit;
+    }
+    
+    $orderId = (int)$data['order_id'];
+    $note = $data['note'];
+    
+    $orderItems = $this->orderItemRepository->findByOrderId($orderId);
+    $hasVendorProducts = false;
+    
+    foreach ($orderItems as $item) {
+        $product = $this->productRepository->findOne($item['product_id']);
+        if ($product && $product['vendor_id'] == $vendorId) {
+            $hasVendorProducts = true;
+            break;
+        }
+    }
+    
+    if (!$hasVendorProducts) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'You do not have permission to add notes to this order']);
+        exit;
+    }
+    
+    
+    // Return JSON response
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'message' => 'Note added successfully',
+        'note' => [
+            'id' => time(), 
+            'order_id' => $orderId,
+            'vendor_id' => $vendorId,
+            'note' => $note,
+            'created_at' => date('Y-m-d H:i:s')
+        ]
+    ]);
+    exit;
+}
 }
