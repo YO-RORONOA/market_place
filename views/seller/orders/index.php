@@ -312,6 +312,7 @@
 </div>
 
 <script>
+// Improved JavaScript for views/seller/orders/index.php - Updates DOM without page refresh
 document.addEventListener('DOMContentLoaded', function() {
     // Bulk selection functionality
     const selectAll = document.getElementById('selectAll');
@@ -357,9 +358,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Here you would normally send an AJAX request to your backend
-        // For now, we'll just show a confirmation
         if (action === 'export_csv') {
-            alert(`Exporting ${selectedOrders.length} orders as CSV`);
+            showToast(`Exporting ${selectedOrders.length} orders as CSV`, 'info');
             // In a real implementation, you would redirect to a download endpoint
         } else {
             const statusMap = {
@@ -376,25 +376,41 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-AJAX-REQUEST': 'true'
                     },
                     body: JSON.stringify({
                         order_ids: selectedOrders,
                         status: newStatus
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Server returned an error');
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        alert(`Successfully updated ${data.updated} orders to ${newStatus}`);
-                        window.location.reload();
+                        // Update the UI for updated orders
+                        updateOrderStatuses(selectedOrders, newStatus);
+                        // Show success message
+                        showToast(`Successfully updated ${data.updated} orders to ${newStatus}`, 'success');
+                        // Clear checkboxes
+                        selectAll.checked = false;
+                        orderCheckboxes.forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+                        updateSelectedCount();
                     } else {
-                        alert('Failed to update orders: ' + data.message);
+                        showToast('Failed to update orders: ' + data.message, 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while updating orders');
+                    showToast('An error occurred while updating orders: ' + error.message, 'error');
                 });
             }
         }
@@ -454,24 +470,163 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-AJAX-REQUEST': 'true'
             },
             body: JSON.stringify(formDataObj)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Server returned an error');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
+                // Update the UI for this specific order
+                updateSingleOrderStatus(formDataObj.order_id, formDataObj.status);
+                
+                // Hide modal
                 statusModal.classList.add('hidden');
-                alert('Order status updated successfully');
-                window.location.reload();
+                
+                // Show success message
+                showToast('Order status updated successfully', 'success');
             } else {
-                alert('Failed to update order status: ' + data.message);
+                showToast('Failed to update order status: ' + data.message, 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while updating order status');
+            showToast('An error occurred while updating order status: ' + error.message, 'error');
         });
+    });
+    
+    // Function to update statuses in the UI for bulk update
+    function updateOrderStatuses(orderIds, newStatus) {
+        orderIds.forEach(orderId => {
+            updateSingleOrderStatus(orderId, newStatus);
+        });
+    }
+    
+    // Function to update a single order's status in the UI
+    function updateSingleOrderStatus(orderId, newStatus) {
+        const orderRow = document.querySelector(`tr[data-order-id="${orderId}"]`) || 
+                          document.querySelector(`.quick-status-btn[data-order-id="${orderId}"]`).closest('tr');
+                          
+        if (orderRow) {
+            const statusBadge = orderRow.querySelector('.rounded-full');
+            
+            if (statusBadge) {
+                // Remove existing status classes
+                statusBadge.classList.remove(
+                    'bg-green-100', 'text-green-800',
+                    'bg-yellow-100', 'text-yellow-800',
+                    'bg-blue-100', 'text-blue-800',
+                    'bg-indigo-100', 'text-indigo-800',
+                    'bg-red-100', 'text-red-800',
+                    'bg-gray-100', 'text-gray-800'
+                );
+                
+                // Add appropriate class based on new status
+                switch (newStatus) {
+                    case 'completed':
+                    case 'paid':
+                        statusBadge.classList.add('bg-green-100', 'text-green-800');
+                        break;
+                    case 'pending':
+                        statusBadge.classList.add('bg-yellow-100', 'text-yellow-800');
+                        break;
+                    case 'processing':
+                        statusBadge.classList.add('bg-blue-100', 'text-blue-800');
+                        break;
+                    case 'shipped':
+                        statusBadge.classList.add('bg-indigo-100', 'text-indigo-800');
+                        break;
+                    case 'cancelled':
+                        statusBadge.classList.add('bg-red-100', 'text-red-800');
+                        break;
+                    default:
+                        statusBadge.classList.add('bg-gray-100', 'text-gray-800');
+                }
+                
+                // Update text
+                statusBadge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+            }
+        }
+    }
+    
+    // Create toast notification function
+    function showToast(message, type = 'success') {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'fixed top-4 right-4 z-50';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        
+        // Set classes based on type
+        let typeClasses;
+        let icon;
+        
+        switch(type) {
+            case 'success':
+                typeClasses = 'bg-green-500 text-white';
+                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />';
+                break;
+            case 'error':
+                typeClasses = 'bg-red-500 text-white';
+                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+                break;
+            case 'info':
+                typeClasses = 'bg-blue-500 text-white';
+                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                break;
+            default:
+                typeClasses = 'bg-gray-800 text-white';
+                icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+        }
+        
+        toast.className = `p-4 rounded-md mb-2 transition-all duration-300 transform translate-x-full opacity-0 ${typeClasses}`;
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    ${icon}
+                </svg>
+                ${message}
+            </div>
+        `;
+        
+        // Add to DOM
+        toastContainer.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+        }, 10);
+        
+        // Remove after delay
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Add data-order-id attribute to rows for easier selection
+    orderCheckboxes.forEach(checkbox => {
+        const orderId = checkbox.value;
+        const row = checkbox.closest('tr');
+        if (row) {
+            row.setAttribute('data-order-id', orderId);
+        }
     });
 });
 </script>

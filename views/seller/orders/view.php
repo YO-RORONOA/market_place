@@ -343,7 +343,7 @@
     </div>
 </div>
 
-<script>
+<script>// Improved JavaScript for views/seller/orders/view.php - Updates DOM without page refresh
 document.addEventListener('DOMContentLoaded', function() {
     // Show/hide shipping fields based on status
     const newStatusSelect = document.getElementById('newStatus');
@@ -375,27 +375,39 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-AJAX-REQUEST': 'true'
             },
             body: JSON.stringify(formDataObj)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Server returned an error');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                alert('Order status updated successfully');
-                window.location.reload();
+                // Instead of reloading the page, update the DOM
+                updateStatusDisplay(formDataObj.status);
+                
+                // Show success message
+                showToast('Order status updated successfully', 'success');
             } else {
-                alert('Failed to update order status: ' + data.message);
+                showToast('Failed to update order status: ' + data.message, 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while updating order status');
+            showToast('An error occurred while updating order status: ' + error.message, 'error');
         });
     });
     
     // Add note form submission
     const addNoteForm = document.getElementById('addNoteForm');
+    const notesContainer = document.getElementById('notesContainer');
     
     addNoteForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -412,27 +424,216 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-AJAX-REQUEST': 'true'
             },
             body: JSON.stringify(formDataObj)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Server returned an error');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 // Clear the note field
                 document.getElementById('noteText').value = '';
                 
-                // Refresh notes (in a real implementation, you'd update the DOM with the new note)
-                alert('Note added successfully');
-                window.location.reload();
+                // Update notes section with the new note
+                addNoteToContainer(data.note);
+                
+                // Show success message
+                showToast('Note added successfully', 'success');
             } else {
-                alert('Failed to add note: ' + data.message);
+                showToast('Failed to add note: ' + data.message, 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while adding the note');
+            showToast('An error occurred while adding the note: ' + error.message, 'error');
         });
     });
+    
+    // Function to update the status display in the UI
+    function updateStatusDisplay(newStatus) {
+        // Update the status pill/badge
+        const statusSpan = document.querySelector('.rounded-full');
+        if (statusSpan) {
+            // Remove existing status classes
+            statusSpan.classList.remove(
+                'bg-green-100', 'text-green-800',
+                'bg-yellow-100', 'text-yellow-800',
+                'bg-blue-100', 'text-blue-800',
+                'bg-indigo-100', 'text-indigo-800',
+                'bg-red-100', 'text-red-800',
+                'bg-gray-100', 'text-gray-800'
+            );
+            
+            // Add appropriate class based on new status
+            switch (newStatus) {
+                case 'completed':
+                case 'paid':
+                    statusSpan.classList.add('bg-green-100', 'text-green-800');
+                    break;
+                case 'pending':
+                    statusSpan.classList.add('bg-yellow-100', 'text-yellow-800');
+                    break;
+                case 'processing':
+                    statusSpan.classList.add('bg-blue-100', 'text-blue-800');
+                    break;
+                case 'shipped':
+                    statusSpan.classList.add('bg-indigo-100', 'text-indigo-800');
+                    break;
+                case 'cancelled':
+                    statusSpan.classList.add('bg-red-100', 'text-red-800');
+                    break;
+                default:
+                    statusSpan.classList.add('bg-gray-100', 'text-gray-800');
+            }
+            
+            // Update text
+            statusSpan.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+        }
+        
+        // Update the timeline if it exists
+        updateTimeline(newStatus);
+    }
+    
+    // Function to update the order timeline based on status
+    function updateTimeline(newStatus) {
+        // This would need to be customized based on your timeline structure
+        // For now, we'll just update the status circles
+        const timelineSteps = document.querySelectorAll('.relative.flex.items-start');
+        
+        if (timelineSteps.length > 0) {
+            // Reset all steps
+            timelineSteps.forEach(step => {
+                const circle = step.querySelector('.h-4.w-4');
+                if (circle) {
+                    // Reset to default styling
+                    circle.classList.remove('border-green-500', 'bg-green-500');
+                    circle.classList.add('border-2', 'border-accent-ochre', 'bg-white');
+                }
+                
+                // Remove current marker
+                const textElements = step.querySelectorAll('.text-sm');
+                textElements.forEach(text => {
+                    if (text.textContent.includes('current')) {
+                        text.textContent = text.textContent.replace(' (current)', '');
+                    }
+                });
+            });
+            
+            // Update based on new status
+            // This is simplified logic - you would need to adjust based on your actual timeline structure
+            let stepToUpdate = null;
+            
+            switch (newStatus) {
+                case 'pending':
+                    stepToUpdate = timelineSteps[0]; // First step
+                    break;
+                case 'processing':
+                    stepToUpdate = timelineSteps.length > 1 ? timelineSteps[1] : null;
+                    break;
+                case 'shipped':
+                    stepToUpdate = timelineSteps.length > 2 ? timelineSteps[2] : null;
+                    break;
+                case 'completed':
+                    stepToUpdate = timelineSteps.length > 3 ? timelineSteps[3] : null;
+                    break;
+                case 'cancelled':
+                    // Special case for cancelled
+                    stepToUpdate = timelineSteps[0]; // Just mark the first step
+                    const title = stepToUpdate.querySelector('h4');
+                    if (title) {
+                        title.textContent = 'Cancelled';
+                    }
+                    break;
+            }
+            
+            if (stepToUpdate) {
+                const circle = stepToUpdate.querySelector('.h-4.w-4');
+                if (circle) {
+                    circle.classList.remove('border-2', 'border-accent-ochre', 'bg-white');
+                    circle.classList.add('border-green-500', 'bg-green-500');
+                }
+                
+                // Mark as current
+                const title = stepToUpdate.querySelector('h4');
+                if (title) {
+                    title.textContent = title.textContent + ' (current)';
+                }
+            }
+        }
+    }
+    
+    // Function to add a note to the notes container
+    function addNoteToContainer(noteData) {
+        // Clear the "no notes" message if it exists
+        if (notesContainer.innerHTML.includes('No notes added yet')) {
+            notesContainer.innerHTML = '';
+        }
+        
+        // Create and append the new note
+        const noteElement = document.createElement('div');
+        noteElement.className = 'p-4 border-b border-gray-200';
+        noteElement.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm">${noteData.note}</p>
+                    <span class="text-xs text-gray-500">${noteData.created_at}</span>
+                </div>
+            </div>
+        `;
+        
+        notesContainer.appendChild(noteElement);
+    }
+    
+    // Create toast notification function
+    function showToast(message, type = 'success') {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'fixed top-4 right-4 z-50';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `p-4 rounded-md mb-2 transition-all duration-300 transform translate-x-full opacity-0 ${
+            type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+        }`;
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    ${type === 'success' 
+                        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />' 
+                        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />'}
+                </svg>
+                ${message}
+            </div>
+        `;
+        
+        // Add to DOM
+        toastContainer.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+        }, 10);
+        
+        // Remove after delay
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
 });
 </script>
