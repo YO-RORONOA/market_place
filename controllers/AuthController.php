@@ -70,7 +70,7 @@ class AuthController extends Controller
                 if ($existingUser->hasRole(Role::BUYER)) {
                     $user->addError('email', 'This email is already registered.');
                 } else {
-                    if ($this->authService->addRoleToUser($existingUser->id, Role::BUYER)) {
+                    if ($this->authService->addRoleToUser($existingUser->id, Role::BUYER)) { 
                         Application::$app->session->setFlash('success', 'Your account has been updated with buyer privileges.');
                         Application::$app->response->redirect('/login');
                         return;
@@ -81,7 +81,7 @@ class AuthController extends Controller
             } else {
                 $user->primary_role_id = Role::BUYER;
                 
-                if ($user->validate() && $this->authService->register($userData, Role::BUYER)) {
+                if ($user->validate() && $this->authService->register($userData, Role::BUYER)) {  //passing userdata instead of user object for seperation of concerns(best practices)
                     Application::$app->session->setFlash('success', 'Thanks for registering! Please check your email to verify your account.');
                     Application::$app->session->set('verification_email', $user->email);
                     Application::$app->response->redirect('/email-verification');

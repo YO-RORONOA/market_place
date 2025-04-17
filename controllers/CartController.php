@@ -33,7 +33,7 @@ class CartController extends Controller
     
     public function add(Request $request)
     {
-        if (!$request->isPost()) {
+        if (!$request->isPost()) { //check other than POST not valid
             if ($request->isXhr()) {
                 header('Content-Type: application/json');
                 echo json_encode([

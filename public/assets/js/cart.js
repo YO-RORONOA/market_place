@@ -33,7 +33,7 @@ function initAddToCartForms() {
             
             console.log('Adding product:', productId, 'quantity:', quantity);
             
-            // Use XMLHttpRequest for compatibility
+    
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/cart/add', true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -56,7 +56,7 @@ function initAddToCartForms() {
                             button.classList.add('bg-green-600');
                             
                             // Show success notification
-                            if (typeof showNotification === 'function') {
+                            if (typeof showNotification === 'function') { //sately check 
                                 showNotification(response.message);
                             } else {
                                 alert(response.message);
