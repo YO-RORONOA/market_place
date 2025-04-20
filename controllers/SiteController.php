@@ -22,6 +22,13 @@ class SiteController extends Controller
     }
     public function home()
     {
+        $imgs = [
+            '/assets/images/buy_physical_books.webp',
+            '/assets/images/clothingWallpaper.jpg',
+            '/assets/images/healthWallpaper.jpg',
+            '/assets/images/electronics.jpg'
+        ];
+
         $categories = $this->categoryRepository->getMainCategories();
         
         $newArrivals = $this->productRepository->findAll(
@@ -55,6 +62,7 @@ class SiteController extends Controller
         }
         
         return $this->render('home/index', [
+            'imgs' => $imgs,
             'categories' => $categories,
             'newArrivals' => $newArrivals,
             'popularProducts' => $popularProducts,

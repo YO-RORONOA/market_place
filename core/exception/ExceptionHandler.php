@@ -184,7 +184,6 @@ class ExceptionHandler
             
             <h2>Request Details</h2>
             <div class="trace">
-                <pre>URI: {$_SERVER['REQUEST_URI']}\nMethod: {$_SERVER['REQUEST_METHOD']}</pre>
             </div>
         </body>
         </html>

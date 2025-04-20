@@ -50,41 +50,198 @@ use App\core\Application;
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
     <!-- Mobile Header with Hamburger Menu -->
-    <header class="relative shadow-md moroccan-border">
-        <div class="absolute inset-0 z-0" style="background-image: url('../../assets/images/wmremove-transformed(1).jpeg'); background-size: cover; background-position: center; opacity: 0.15;"></div>
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center relative z-10">
+    <header class="bg-white shadow-md moroccan-border sticky top-0 z-30">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+            <!-- Left: Logo & Toggle -->
             <div class="flex items-center">
-                <!-- Mobile menu button - Visible only on small screens -->
-                <button id="sidebarToggle" type="button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-accent-navy hover:bg-gray-100 focus:outline-none mr-2">
+                <!-- Mobile menu button -->
+                <button id="sidebarToggle" class="lg:hidden p-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-accent-teal focus:outline-none transition-colors duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
                 
-                <a href="/" class="text-xl md:text-2xl font-bold text-accent-navy">
-                    <span class="text-accent-terracotta">YOU</span>/Market
+                <!-- Logo -->
+                <a href="/" class="flex items-center ml-2 lg:ml-0">
+                    <div class="flex items-center">
+                        <div class="bg-accent-terracotta text-white rounded-md w-8 h-8 flex items-center justify-center mr-2">
+                            <span class="font-bold">Y</span>
+                        </div>
+                        <span class="text-xl font-bold">
+                            <span class="text-accent-terracotta">YOU</span><span class="text-accent-navy">/Market</span>
+                        </span>
+                    </div>
                 </a>
             </div>
+
+            <!-- Center: Page Title (visible on larger screens) -->
+            <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2">
+                <div class="flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                    <span class="text-accent-teal mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                    </span>
+                    <span class="text-sm font-medium">Vendor Portal</span>
+                </div>
+            </div>
             
-            <!-- Desktop Navigation - Hidden on small screens -->
-            <nav class="hidden md:block">
-                <ul class="flex space-x-6">
-                    <li><a href="/" class="text-gray-600 hover:text-accent-teal transition">Marketplace</a></li>
-                    <li><a href="/vendor/dashboard" class="text-gray-600 hover:text-accent-teal transition">Dashboard</a></li>
-                    <li><a href="/logout" class="text-gray-600 hover:text-accent-teal transition">Logout</a></li>
-                </ul>
-            </nav>
-            
-            <!-- Mobile notification/profile buttons -->
-            <div class="flex items-center md:hidden">
-                <button type="button" class="p-2 rounded-full text-gray-500 hover:text-accent-navy focus:outline-none">
+            <!-- Right: Action Buttons -->
+            <div class="flex items-center space-x-1 md:space-x-3">
+                <!-- Create New Button -->
+                <div class="relative group">
+                    <button id="createNewBtn" class="p-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-accent-teal focus:outline-none transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </button>
+                    <!-- Dropdown for Create New -->
+                    <div id="createNewDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10 text-sm">
+                        <a href="/vendor/products/create" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-accent-ochre" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            New Product
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-accent-ochre" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            New Promotion
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Notifications -->
+                <button id="notificationsBtn" class="p-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-accent-teal focus:outline-none transition-colors duration-200 relative">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
+                    <!-- Notification badge - only shows when there are notifications -->
+                    <span class="absolute -top-1 -right-1 bg-accent-terracotta text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">3</span>
                 </button>
+                
+                <!-- Desktop navigation -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="/" class="px-2 py-1 rounded-md text-sm font-medium text-gray-600 hover:text-accent-teal hover:bg-gray-100 transition-colors duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Store
+                    </a>
+                    
+                    <?php if (in_array(\App\models\Role::BUYER, Application::$app->session->get('user')['roles'] ?? [])): ?>
+                    <a href="/switch-to-buyer" class="px-2 py-1 rounded-md text-sm font-medium text-gray-600 hover:text-accent-teal hover:bg-gray-100 transition-colors duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Switch
+                    </a>
+                    <?php endif; ?>
+                </nav>
+                
+                <!-- User profile dropdown -->
+                <div class="relative group">
+                    <button id="userProfileBtn" class="flex items-center p-1 rounded-full hover:bg-gray-100 transition-colors duration-200 focus:outline-none">
+                        <div class="w-8 h-8 rounded-full bg-accent-teal text-white flex items-center justify-center text-sm font-medium">
+                            <?= strtoupper(substr(Application::$app->session->get('user')['email'] ?? 'U', 0, 1)) ?>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 ml-1 hidden md:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    
+                    <!-- Profile Dropdown Menu -->
+                    <div id="userProfileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10">
+                        <div class="px-4 py-2 border-b border-gray-100 text-sm">
+                            <p class="text-gray-500">Signed in as</p>
+                            <p class="font-medium text-gray-900 truncate"><?= htmlspecialchars(Application::$app->session->get('user')['email'] ?? '') ?></p>
+                        </div>
+                        <a href="/vendor/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Settings
+                            </div>
+                        </a>
+                        <a href="/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 border-t border-gray-100 mt-1">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Logout
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </header>
+    </div>
+    
+    <!-- Notifications Panel (Hidden by default) -->
+    <div id="notificationsPanel" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-10 mr-4">
+        <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-sm font-medium text-gray-900">Notifications</h3>
+            <button class="text-xs text-accent-teal hover:text-accent-navy">Mark all as read</button>
+        </div>
+        <div class="max-h-96 overflow-y-auto">
+            <a href="#" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
+                <div class="flex">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">New order received!</p>
+                        <p class="text-xs text-gray-500">Someone purchased "Handcrafted Moroccan Plate"</p>
+                        <p class="text-xs text-gray-400 mt-1">10 minutes ago</p>
+                    </div>
+                </div>
+            </a>
+            <a href="#" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
+                <div class="flex">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">Payment completed</p>
+                        <p class="text-xs text-gray-500">You received a payment of $79.99</p>
+                        <p class="text-xs text-gray-400 mt-1">1 hour ago</p>
+                    </div>
+                </div>
+            </a>
+            <a href="#" class="block px-4 py-3 hover:bg-gray-50">
+                <div class="flex">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">Low stock alert</p>
+                        <p class="text-xs text-gray-500">Blue Moroccan Ceramic Tagine (2 left)</p>
+                        <p class="text-xs text-gray-400 mt-1">Yesterday</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="px-4 py-2 border-t border-gray-100 text-center">
+            <a href="#" class="text-sm text-accent-teal hover:text-accent-navy">View all notifications</a>
+        </div>
+    </div>
+</header>
 
     <div class="flex flex-grow">
         <!-- Mobile Sidebar (off-canvas) -->
