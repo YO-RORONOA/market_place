@@ -34,29 +34,33 @@ class AuthController extends Controller
     
     
     public function login(Request $request)
-    {
-        $loginForm = new LoginForm();
+{
+    $loginForm = new LoginForm();
+    
+    if ($request->isPost()) {
+        $loginForm->loadData($request->getBody());
         
-        if ($request->isPost()) {
-            $loginForm->loadData($request->getBody());
+        if ($loginForm->validate() && $this->authService->login($loginForm->email, $loginForm->password, $loginForm->rememberMe ?? false)) {
+            Application::$app->session->setFlash('success', 'Welcome back!');
             
-            if ($loginForm->validate() && $this->authService->login($loginForm->email, $loginForm->password, $loginForm->rememberMe ?? false)) {
-                Application::$app->session->setFlash('success', 'Welcome back!');
-                
-                // Check if there's a redirect URL set in session
-                $redirectUrl = Application::$app->session->get('redirect_after_login') ?? '/';
+            // Check if there's a redirect URL set in session
+            $redirectUrl = Application::$app->session->get('redirect_after_login');
+            
+            if ($redirectUrl) {
                 Application::$app->session->remove('redirect_after_login');
-                
                 Application::$app->response->redirect($redirectUrl);
-                return;
+            } else {
+                Application::$app->response->redirect('/');
             }
+            return;
         }
-        
-        return $this->render('auth/login', [
-            'model' => $loginForm,
-            'title' => 'Login'
-        ]);
     }
+    
+    return $this->render('auth/login', [
+        'model' => $loginForm,
+        'title' => 'Login'
+    ]);
+}
     
     
     public function register(Request $request)
