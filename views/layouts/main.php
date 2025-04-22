@@ -145,14 +145,24 @@ if (isset(App\core\Application::$app) && App\core\Application::$app->session->ge
                     
                     <!-- Search bar - Hidden on mobile, visible on larger screens -->
                     <div class="hidden md:block flex-grow max-w-xl mx-4">
-                        <div class="relative">
-                            <input type="text" placeholder="Search for artisan products..." class="search-input w-full py-2 pl-10 pr-4 rounded-full border border-gray-300 focus:outline-none focus:border-accent-teal text-sm">
-                            <div class="absolute left-3 top-2.5 text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
+                        <form action="/products" method="GET" class="main-search-form">
+                            <div class="relative">
+                                <input type="text" 
+                                       name="search" 
+                                       placeholder="Search for artisan products..." 
+                                       class="search-input w-full py-2 pl-10 pr-4 rounded-full border border-gray-300 focus:outline-none focus:border-accent-teal text-sm">
+                                <div class="absolute left-3 top-2.5 text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <button type="submit" class="absolute right-3 top-2 text-accent-teal hover:text-accent-navy focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                     
                     <!-- Right section with nav icons -->
@@ -297,14 +307,24 @@ if (isset(App\core\Application::$app) && App\core\Application::$app->session->ge
         
         <!-- Mobile search bar - Hidden by default, toggle with search button -->
         <div id="mobile-search" class="hidden p-4 border-t border-gray-200 bg-white">
-            <div class="relative">
-                <input type="text" placeholder="Search for artisan products..." class="search-input w-full py-2 pl-10 pr-4 rounded-full border border-gray-300 focus:outline-none focus:border-accent-teal text-sm">
-                <div class="absolute left-3 top-2.5 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <form action="/products" method="GET" class="main-search-form mobile">
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           placeholder="Search for artisan products..." 
+                           class="search-input w-full py-2 pl-10 pr-4 rounded-full border border-gray-300 focus:outline-none focus:border-accent-teal text-sm">
+                    <div class="absolute left-3 top-2.5 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <button type="submit" class="absolute right-3 top-2 text-accent-teal hover:text-accent-navy focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
         
         <!-- Mobile menu - Hidden by default -->
@@ -478,7 +498,7 @@ if (isset(App\core\Application::$app) && App\core\Application::$app->session->ge
     </header>
 
     <main class="flex-grow py-8">
-        <?php if (App\core\Application::$app->session->getFlash('success')): ?>
+    <?php if (App\core\Application::$app->session->getFlash('success')): ?>
             <div class="container mx-auto px-4 mb-6">
                 <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4" role="alert">
                     <p><?= App\core\Application::$app->session->getFlash('success') ?></p>
@@ -531,6 +551,12 @@ if (isset(App\core\Application::$app) && App\core\Application::$app->session->ge
             if (searchButton && mobileSearch) {
                 searchButton.addEventListener('click', function() {
                     mobileSearch.classList.toggle('hidden');
+                    if (!mobileSearch.classList.contains('hidden')) {
+                        const searchInput = mobileSearch.querySelector('input');
+                        if (searchInput) {
+                            setTimeout(() => searchInput.focus(), 100);
+                        }
+                    }
                 });
             }
             
@@ -551,10 +577,105 @@ if (isset(App\core\Application::$app) && App\core\Application::$app->session->ge
                     }
                 });
             });
+            
+            // Ensure search forms have proper action and prevent empty submissions
+            const searchForms = document.querySelectorAll('.main-search-form');
+            searchForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const searchInput = this.querySelector('input[name="search"]');
+                    if (!searchInput || !searchInput.value.trim()) {
+                        e.preventDefault();
+                    }
+                });
+            });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    // Initialize desktop and mobile search functionality
+    initSearchForms();
+    initMobileSearchToggle();
+});
+
+/**
+ * Initialize search forms with proper behavior
+ */
+function initSearchForms() {
+    // Get all search forms
+    const searchForms = document.querySelectorAll('.main-search-form');
+    
+    searchForms.forEach(form => {
+        // Ensure form has correct action and method
+        form.action = '/products';
+        form.method = 'GET';
+        
+        // Get search input
+        const searchInput = form.querySelector('input[type="text"]');
+        if (searchInput) {
+            // Ensure input has name="search"
+            searchInput.name = 'search';
+            
+            // If URL has a search parameter, pre-fill the input
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search');
+            if (searchParam) {
+                searchInput.value = searchParam;
+            }
+            
+            // Handle form submission validation
+            form.addEventListener('submit', function(e) {
+                if (!searchInput.value.trim()) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        }
+        
+        // Ensure submit button exists and works
+        let submitButton = form.querySelector('button[type="submit"]');
+        if (!submitButton) {
+            // Create a submit button if it doesn't exist
+            const inputContainer = form.querySelector('.relative');
+            if (inputContainer) {
+                submitButton = document.createElement('button');
+                submitButton.type = 'submit';
+                submitButton.className = 'absolute right-3 top-2 text-accent-teal hover:text-accent-navy focus:outline-none';
+                submitButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                `;
+                inputContainer.appendChild(submitButton);
+            }
+        }
+    });
+}
+
+/**
+ * Initialize mobile search toggle functionality
+ */
+function initMobileSearchToggle() {
+    const mobileSearchButton = document.querySelector('button.md\\:hidden');
+    const mobileSearchContainer = document.getElementById('mobile-search');
+    
+    if (mobileSearchButton && mobileSearchContainer) {
+        mobileSearchButton.addEventListener('click', function() {
+            mobileSearchContainer.classList.toggle('hidden');
+            
+            // Focus the search input when opening
+            if (!mobileSearchContainer.classList.contains('hidden')) {
+                const searchInput = mobileSearchContainer.querySelector('input');
+                if (searchInput) {
+                    setTimeout(() => searchInput.focus(), 100);
+                }
+            }
+        });
+    }
+}
     </script>
     <script src="/assets/js/app.js"></script>
     <script src="/assets/js/cart.js"></script>
     <script src="/assets/js/products.js"></script>
+    <!-- Include the search script to handle search functionality -->
+    <script src="/assets/js/search.js"></script>
 </body>
 </html>

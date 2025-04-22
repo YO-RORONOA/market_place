@@ -47,7 +47,7 @@ class CartController extends Controller
             return;
         }
         
-        $productId = (int)$request->getbody()['product_id'] ?? 0;
+        $productId = (int)$request->getbody()['product_id'] ?? 0; //returns 0 if value not int
         $quantity = (int)$request->getbody()['quantity'] ?? 1;
         
         if ($productId <= 0 || $quantity <= 0) {
