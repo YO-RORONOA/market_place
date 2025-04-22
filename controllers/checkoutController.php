@@ -27,12 +27,20 @@ class CheckoutController extends Controller
         $this->orderService = new OrderService();
         $this->userRepository = new UserRepository();
         
-        $this->registerMiddleware(new AuthMiddleware());
+        // $this->registerMiddleware(new AuthMiddleware()); commennt for now check later
     }
     
     
     public function index()
     {
+        if (!Application::$app->session->get('user')) {
+            Application::$app->session->set('redirect_after_login', '/checkout');
+            Application::$app->session->setFlash('info', 'Please login or register to continue checkout');
+            Application::$app->response->redirect('/login');
+            return;
+        }
+
+
         $cartItems = $this->cartService->getCartItems();
         $cartTotal = $this->cartService->getCartTotal();
         

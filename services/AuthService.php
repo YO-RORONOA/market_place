@@ -40,6 +40,10 @@ class AuthService
 
         if($user->validate() && $user->save())
         {
+            if ($user->id) {
+                $cartService = new \App\services\CartService();
+                $cartService->persistVisitorCartToUser($user->id);
+            }
             $this->emailService->sendVerificationEmail($user, $token);
 
             Application::$app->session->setFlash('success', 'Registration successful! Please check your email to verify your account.');
@@ -117,7 +121,8 @@ class AuthService
         ]);
         
         $cartService = new \App\services\CartService();
-        $cartService->initializeUserCart($user->id);
+        // $cartService->initializeUserCart($user->id); maybe replace
+        $cartService->persistVisitorCartToUser($user->id);
         
         return true;
     }

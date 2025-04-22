@@ -42,7 +42,12 @@ class AuthController extends Controller
             
             if ($loginForm->validate() && $this->authService->login($loginForm->email, $loginForm->password, $loginForm->rememberMe ?? false)) {
                 Application::$app->session->setFlash('success', 'Welcome back!');
-                Application::$app->response->redirect('/');
+                
+                // Check if there's a redirect URL set in session
+                $redirectUrl = Application::$app->session->get('redirect_after_login') ?? '/';
+                Application::$app->session->remove('redirect_after_login');
+                
+                Application::$app->response->redirect($redirectUrl);
                 return;
             }
         }
