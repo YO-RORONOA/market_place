@@ -112,6 +112,25 @@ $app->router->get('/vendor/orders/view', [App\controllers\VendorController::clas
     $app->router->get('/orders/view', [App\controllers\OrderController::class, 'view']);
     $app->router->get('/orders/ajax', [App\controllers\OrderController::class, 'ajax']);
     $app->router->get('/orders/cancel', [App\controllers\OrderController::class, 'cancel']);
+    $app->router->get('/admin/login', [App\controllers\AdminAuthController::class, 'login']);
+    $app->router->post('/admin/login', [App\controllers\AdminAuthController::class, 'login']);
+    $app->router->get('/admin/logout', [App\controllers\AdminAuthController::class, 'logout']);
+
+    // Admin authentication routes
+$app->router->get('/admin/login', [App\controllers\AdminAuthController::class, 'login']);
+$app->router->post('/admin/login', [App\controllers\AdminAuthController::class, 'login']);
+$app->router->get('/admin/logout', [App\controllers\AdminAuthController::class, 'logout']);
+
+// Admin dashboard route
+$app->router->get('/admin/dashboard', [App\controllers\AdminAuthController::class, 'dashboard']);
+
+// Admin vendor management routes
+$app->router->get('/admin/vendors', [App\controllers\AdminAuthController::class, 'vendors']);
+$app->router->post('/admin/vendors/approve', [App\controllers\AdminAuthController::class, 'approveVendor']);
+$app->router->post('/admin/vendors/reject', [App\controllers\AdminAuthController::class, 'rejectVendor']);
+
+// Admin statistics route
+$app->router->get('/admin/statistics', [App\controllers\AdminAuthController::class, 'statistics']);
     
     // Error routes (for testing)
     $app->router->get('/test/error', function() {
@@ -150,4 +169,9 @@ $app->router->get('/vendor/orders/view', [App\controllers\VendorController::clas
         echo "The application could not be started. Please check the server logs.";
         error_log($e->getMessage() . "\n" . $e->getTraceAsString());
     }
+
+
+
+// Admin dashboard routes (basic for now)
+$app->router->get('/admin/dashboard', [App\controllers\AdminAuthController::class, 'dashboard']);
 }
