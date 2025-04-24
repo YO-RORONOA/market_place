@@ -3206,110 +3206,93 @@ Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 09:39:41] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
+[2025-04-22 19:27:29] App\core\exception\ForbiddenException: You don't have permission to access this page in /var/www/html/core/middlewares/AuthMiddleware.php on line 25
+Stack trace: #0 /var/www/html/core/Router.php(70): App\Core\Middlewares\AuthMiddleware->execute()
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(149): App\core\Application->run()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 13:10:01] Error: Class "AdminDashboardController" not found in /var/www/html/core/Router.php on line 63
-Stack trace: #0 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#1 /var/www/html/public/web.php(175): App\core\Application->run()
-#2 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
-#3 {main}
-
-[2025-04-24 13:10:17] Error: Class "AdminDashboardController" not found in /var/www/html/core/Router.php on line 63
-Stack trace: #0 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#1 /var/www/html/public/web.php(175): App\core\Application->run()
-#2 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
-#3 {main}
-
-[2025-04-24 13:10:22] Error: Class "AdminDashboardController" not found in /var/www/html/core/Router.php on line 63
-Stack trace: #0 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#1 /var/www/html/public/web.php(175): App\core\Application->run()
-#2 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
-#3 {main}
-
-[2025-04-24 13:10:49] Error: Class "AdminDashboardController" not found in /var/www/html/core/Router.php on line 63
-Stack trace: #0 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#1 /var/www/html/public/web.php(175): App\core\Application->run()
-#2 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
-#3 {main}
-
-[2025-04-24 13:10:52] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
-#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(175): App\core\Application->run()
-#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
-#4 {main}
-
-[2025-04-24 13:11:10] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
-#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(177): App\core\Application->run()
-#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
-#4 {main}
-
-[2025-04-24 13:11:22] Error: Class "AdminAuthController" not found in /var/www/html/core/Router.php on line 63
-Stack trace: #0 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#1 /var/www/html/public/web.php(177): App\core\Application->run()
-#2 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
-#3 {main}
-
-[2025-04-24 13:45:03] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+[2025-04-22 19:30:23] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
 Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
 #2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 13:48:58] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+[2025-04-22 19:32:15] ErrorException: include_once(/var/www/html/views/products/view.php): Failed to open stream: No such file or directory in /var/www/html/core/Router.php on line 93
+Stack trace: #0 /var/www/html/core/Router.php(93): App\core\exception\ExceptionHandler::handleError(2, 'include_once(/v...', '/var/www/html/c...', 93)
+#1 /var/www/html/core/Router.php(93): include_once()
+#2 /var/www/html/core/Router.php(80): App\core\Router->renderViewOnly('products/view', Array)
+#3 /var/www/html/core/Controller.php(34): App\core\Router->renderView('products/view', Array)
+#4 /var/www/html/controllers/ProductController.php(99): App\core\Controller->render('products/view', Array)
+#5 [internal function]: App\controllers\ProductController->view(Object(App\core\Request))
+#6 /var/www/html/core/Router.php(74): call_user_func(Array, Object(App\core\Request))
+#7 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#8 /var/www/html/public/web.php(141): App\core\Application->run()
+#9 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#10 {main}
+
+[2025-04-22 19:42:25] App\core\exception\ForbiddenException: You need a vendor account to access this page in /var/www/html/Core/Middlewares/VendorMiddleware.php on line 24
+Stack trace: #0 /var/www/html/core/Router.php(70): App\Core\Middlewares\VendorMiddleware->execute()
+#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
+#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#4 {main}
+
+[2025-04-22 19:47:49] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
 Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(144): App\core\Application->run()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 15:51:44] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, class App\controllers\AdminAuthController does not have a method "vendors" in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(Array, Object(App\core\Request))
+[2025-04-22 19:47:59] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(160): App\core\Application->run()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 15:51:50] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, class App\controllers\AdminAuthController does not have a method "vendors" in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(Array, Object(App\core\Request))
+[2025-04-22 19:48:08] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(160): App\core\Application->run()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 15:52:26] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, class App\controllers\AdminAuthController does not have a method "vendors" in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(Array, Object(App\core\Request))
+[2025-04-22 19:56:33] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(160): App\core\Application->run()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 15:52:35] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, class App\controllers\AdminAuthController does not have a method "statistics" in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(Array, Object(App\core\Request))
+[2025-04-22 20:01:11] App\core\exception\ForbiddenException: You don't have permission to access this page in /var/www/html/core/middlewares/AuthMiddleware.php on line 25
+Stack trace: #0 /var/www/html/core/Router.php(70): App\Core\Middlewares\AuthMiddleware->execute()
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(160): App\core\Application->run()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 15:52:36] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, class App\controllers\AdminAuthController does not have a method "statistics" in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(Array, Object(App\core\Request))
+[2025-04-22 20:02:20] App\core\exception\ForbiddenException: You don't have permission to access this page in /var/www/html/core/middlewares/AuthMiddleware.php on line 25
+Stack trace: #0 /var/www/html/core/Router.php(70): App\Core\Middlewares\AuthMiddleware->execute()
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(160): App\core\Application->run()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
-[2025-04-24 15:52:44] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, class App\controllers\AdminAuthController does not have a method "vendors" in /var/www/html/core/Router.php on line 74
-Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(Array, Object(App\core\Request))
+[2025-04-22 20:02:27] App\core\exception\ForbiddenException: You don't have permission to access this page in /var/www/html/core/middlewares/AuthMiddleware.php on line 25
+Stack trace: #0 /var/www/html/core/Router.php(70): App\Core\Middlewares\AuthMiddleware->execute()
 #1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
-#2 /var/www/html/public/web.php(160): App\core\Application->run()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
+#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#4 {main}
+
+[2025-04-22 20:02:56] App\core\exception\ForbiddenException: You don't have permission to access this page in /var/www/html/core/middlewares/AuthMiddleware.php on line 25
+Stack trace: #0 /var/www/html/core/Router.php(70): App\Core\Middlewares\AuthMiddleware->execute()
+#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#2 /var/www/html/public/web.php(141): App\core\Application->run()
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 

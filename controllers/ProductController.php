@@ -25,34 +25,46 @@ class ProductController extends Controller
 {
     $page = max(1, (int)$request->getQuery('page', 1));
     $limit = 12;
-    $offset = ($page -1) * $limit;
+    $offset = ($page - 1) * $limit;
 
     $categoryId = $request->getQuery('category');
     $search = $request->getQuery('search');
+    $sort = $request->getQuery('sort', '');
 
     $params = [];
     $products = [];
     $totalProducts = 0;
+    $orderBy = 'created_at DESC'; // Default sorting
 
-    if($categoryId)
-    {
-        $products = $this->productRepository->findByCategory($categoryId, $limit, $offset);
+    // Handle sorting
+    switch ($sort) {
+        case 'price_asc':
+            $orderBy = 'price ASC';
+            break;
+        case 'price_desc':
+            $orderBy = 'price DESC';
+            break;
+        case 'newest':
+            $orderBy = 'created_at DESC';
+            break;
+        // Add other sorting options as needed
+    }
+
+    if ($categoryId) {
+        $products = $this->productRepository->findByCategory($categoryId, $limit, $offset, $orderBy);
         $totalProducts = $this->productRepository->countProducts(['category_id' => $categoryId, 'status' => 'active']);
         $category = $this->categoryRepository->findOne($categoryId);
         $params['category'] = $category;
-    }
-    elseif($search)
-    {
-        $products = $this->productRepository->search($search, $limit, $offset);
+    } elseif ($search) {
+        $products = $this->productRepository->search($search, $limit, $offset, $orderBy);
         $totalProducts = count($this->productRepository->search($search, 100, 0));
         $params['search'] = $search;
-    }
-    else{
-        $products = $this->productRepository->findAll(['status' => 'active'], false, 'created_at DESC', $limit, $offset);
+    } else {
+        $products = $this->productRepository->findAll(['status' => 'active'], false, $orderBy, $limit, $offset);
         $totalProducts = $this->productRepository->countProducts(['status' => 'active']);
     }
 
-    $totalPages = ceil($totalProducts/ $limit);
+    $totalPages = ceil($totalProducts / $limit);
     $categories = $this->categoryRepository->getMainCategories();
     
     if ($request->isXhr()) {
@@ -75,6 +87,7 @@ class ProductController extends Controller
         'currentPage' => $page,
         'totalPages' => $totalPages,
         'totalProducts' => $totalProducts,
+        'sort' => $sort,
         ...$params
     ]);
 }

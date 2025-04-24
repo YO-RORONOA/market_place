@@ -249,4 +249,30 @@ class CartService
         
         Application::$app->session->set(self::CART_SESSION_KEY, $cart);
     }
+
+
+    public function persistVisitorCartToUser(int $userId): void
+    {
+        $visitorCart = $this->getCart(); 
+        
+        if (empty($visitorCart)) {
+            return; 
+        }
+        
+        $userCart = $this->loadCartFromDatabase($userId);
+        
+        foreach ($visitorCart as $productId => $item) {
+            if (isset($userCart[$productId])) {
+                $userCart[$productId]['quantity'] = max($userCart[$productId]['quantity'], $item['quantity']);
+            } else {
+                $userCart[$productId] = $item;
+            }
+        }
+        
+        Application::$app->session->set(self::CART_SESSION_KEY, $userCart);
+        
+
+        $this->clearCartFromDatabase($userId);
+        $this->persistCartToDatabase($userCart);
+    }
 }
