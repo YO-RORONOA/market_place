@@ -3296,3 +3296,51 @@ Stack trace: #0 /var/www/html/core/Router.php(70): App\Core\Middlewares\AuthMidd
 #3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
 #4 {main}
 
+[2025-04-24 20:33:40] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
+#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#2 /var/www/html/public/web.php(168): App\core\Application->run()
+#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#4 {main}
+
+[2025-04-24 20:33:52] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
+#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#2 /var/www/html/public/web.php(168): App\core\Application->run()
+#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#4 {main}
+
+[2025-04-24 20:33:58] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
+#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#2 /var/www/html/public/web.php(168): App\core\Application->run()
+#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#4 {main}
+
+[2025-04-24 20:40:14] App\core\exception\ForbiddenException: You must be logged in to access this page in /var/www/html/Core/Middlewares/VendorMiddleware.php on line 17
+Stack trace: #0 /var/www/html/core/Router.php(70): App\Core\Middlewares\VendorMiddleware->execute()
+#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#2 /var/www/html/public/web.php(168): App\core\Application->run()
+#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#4 {main}
+
+[2025-04-24 20:52:19] ErrorException: include_once(/var/www/html/views/seller/auth/waiting-approval.php): Failed to open stream: No such file or directory in /var/www/html/core/Router.php on line 93
+Stack trace: #0 /var/www/html/core/Router.php(93): App\core\exception\ExceptionHandler::handleError(2, 'include_once(/v...', '/var/www/html/c...', 93)
+#1 /var/www/html/core/Router.php(93): include_once()
+#2 /var/www/html/core/Router.php(80): App\core\Router->renderViewOnly('seller/auth/wai...', Array)
+#3 /var/www/html/core/Controller.php(34): App\core\Router->renderView('seller/auth/wai...', Array)
+#4 /var/www/html/controllers/VendorAuthController.php(210): App\core\Controller->render('seller/auth/wai...', Array)
+#5 [internal function]: App\controllers\VendorAuthController->waitingApproval(Object(App\core\Request))
+#6 /var/www/html/core/Router.php(74): call_user_func(Array, Object(App\core\Request))
+#7 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#8 /var/www/html/public/web.php(169): App\core\Application->run()
+#9 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#10 {main}
+
+[2025-04-24 20:53:08] TypeError: call_user_func(): Argument #1 ($callback) must be a valid callback, no array or string given in /var/www/html/core/Router.php on line 74
+Stack trace: #0 /var/www/html/core/Router.php(74): call_user_func(false, Object(App\core\Request))
+#1 /var/www/html/core/Application.php(63): App\core\Router->resolve()
+#2 /var/www/html/public/web.php(169): App\core\Application->run()
+#3 /var/www/html/public/index.php(2): require_once('/var/www/html/p...')
+#4 {main}
+

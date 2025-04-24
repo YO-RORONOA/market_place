@@ -77,7 +77,17 @@ class AuthService
         $user->status = UserStatus::ACTIVE;
 
         if ($user->update()) {
-            Application::$app->session->setFlash('success', 'Email verified successfully! You can now log in.');
+            $user->loadRoles();
+            
+            if ($user->hasRole(Role::VENDOR)) {
+                // Notify admin about verified vendor that needs approval
+                // $this->notifyAdminAboutVerifiedVendor($user);
+                
+                Application::$app->session->setFlash('success', 'Email verified successfully! Your vendor account is now pending admin approval. You can log in to check your status.');
+            } else {
+                Application::$app->session->setFlash('success', 'Email verified successfully! You can now log in.');
+            }
+            
             return true;
         }
 

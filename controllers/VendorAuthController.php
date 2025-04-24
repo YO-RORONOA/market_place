@@ -70,7 +70,6 @@ class VendorAuthController extends Controller
             $user->loadData($userData);
             $vendor->loadData($userData);
             
-            // database transaction
             Application::$app->db->pdo->beginTransaction();
             
             try {
@@ -105,7 +104,7 @@ class VendorAuthController extends Controller
                     'user_id' => $userId,
                     'store_name' => $vendor->store_name,
                     'description' => $vendor->description,
-                    'status' => 'active'
+                    'status' => 'pending' 
                 ];
                 
                 $vendorId = $this->vendorRepository->create($vendorData);
@@ -114,15 +113,17 @@ class VendorAuthController extends Controller
                     throw new \Exception('Failed to create vendor profile');
                 }
                 
+                // $this->notifyAdminAboutNewVendor($user, $vendor);
+                
                 Application::$app->db->pdo->commit();
                 
                 if ($existingUser) {
                     $this->authService->login($existingUser->email, $userData['password'], false, Role::VENDOR);
                     
-                    Application::$app->session->setFlash('success', 'Vendor profile created successfully! You can now use your account as a vendor.');
-                    Application::$app->response->redirect('/vendor/dashboard');
+                    Application::$app->session->setFlash('success', 'Vendor profile created successfully! Your account is pending approval by an administrator.');
+                    Application::$app->response->redirect('/vendor/waiting-approval');
                 } else {
-                    Application::$app->session->setFlash('success', 'Thanks for registering as a vendor! Please check your email to verify your account.');
+                    Application::$app->session->setFlash('success', 'Thanks for registering as a vendor! Please check your email to verify your account. After verification, your account will be reviewed by an administrator.');
                     Application::$app->session->set('verification_email', $user->email);
                     Application::$app->response->redirect('/email-verification');
                 }
@@ -139,7 +140,6 @@ class VendorAuthController extends Controller
             'title' => 'Become a Vendor'
         ]);
     }
-    
    
     public function switchToBuyer()
     {
@@ -182,5 +182,34 @@ class VendorAuthController extends Controller
         
         Application::$app->session->setFlash('success', 'Switched to vendor account.');
         Application::$app->response->redirect('/vendor/dashboard');
+    }
+
+    public function waitingApproval()
+    {
+        $this->setLayout('auth');
+        
+        $userId = Application::$app->session->get('user')['id'] ?? 0;
+        
+        if (!$userId) {
+            Application::$app->response->redirect('/login');
+            return '';
+        }
+        
+        $vendor = $this->vendorRepository->findByUserId($userId);
+        
+        if (!$vendor) {
+            Application::$app->response->redirect('/');
+            return '';
+        }
+        
+        if ($vendor->status === 'active') {
+            Application::$app->response->redirect('/vendor/dashboard');
+            return '';
+        }
+        
+        return $this->render('seller/auth/waiting-approval', [
+            'vendor' => $vendor,
+            'title' => 'Waiting For Approval'
+        ]);
     }
 }

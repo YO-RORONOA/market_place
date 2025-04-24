@@ -116,7 +116,7 @@ $app->router->get('/vendor/orders/view', [App\controllers\VendorController::clas
     $app->router->post('/admin/login', [App\controllers\AdminAuthController::class, 'login']);
     $app->router->get('/admin/logout', [App\controllers\AdminAuthController::class, 'logout']);
 
-    // Admin authentication routes
+ // Admin authentication routes
 $app->router->get('/admin/login', [App\controllers\AdminAuthController::class, 'login']);
 $app->router->post('/admin/login', [App\controllers\AdminAuthController::class, 'login']);
 $app->router->get('/admin/logout', [App\controllers\AdminAuthController::class, 'logout']);
@@ -125,12 +125,21 @@ $app->router->get('/admin/logout', [App\controllers\AdminAuthController::class, 
 $app->router->get('/admin/dashboard', [App\controllers\AdminAuthController::class, 'dashboard']);
 
 // Admin vendor management routes
-$app->router->get('/admin/vendors', [App\controllers\AdminAuthController::class, 'vendors']);
-$app->router->post('/admin/vendors/approve', [App\controllers\AdminAuthController::class, 'approveVendor']);
-$app->router->post('/admin/vendors/reject', [App\controllers\AdminAuthController::class, 'rejectVendor']);
+$app->router->get('/admin/vendors', [App\controllers\AdminController::class, 'vendors']);
+$app->router->get('/admin/vendors/view', [App\controllers\AdminController::class, 'viewVendor']);
+$app->router->post('/admin/vendors/approve', [App\controllers\AdminController::class, 'approveVendor']);
+$app->router->post('/admin/vendors/reject', [App\controllers\AdminController::class, 'rejectVendor']);
+$app->router->post('/admin/vendors/suspend', [App\controllers\AdminController::class, 'suspendVendor']);
 
 // Admin statistics route
-$app->router->get('/admin/statistics', [App\controllers\AdminAuthController::class, 'statistics']);
+$app->router->get('/admin/statistics', [App\controllers\AdminController::class, 'statistics']);
+
+// Admin export routes
+$app->router->get('/admin/export/users', [App\controllers\AdminController::class, 'exportUsers']);
+$app->router->get('/admin/export/vendors', [App\controllers\AdminController::class, 'exportVendors']);
+$app->router->get('/admin/export/orders', [App\controllers\AdminController::class, 'exportOrders']);
+$app->router->get('/admin/export/products', [App\controllers\AdminController::class, 'exportProducts']);
+$app->router->get('/vendor/waiting-approval', [App\controllers\VendorAuthController::class, 'waitingApproval']);
     
     // Error routes (for testing)
     $app->router->get('/test/error', function() {

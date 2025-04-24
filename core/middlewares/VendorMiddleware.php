@@ -6,9 +6,17 @@ use App\core\Application;
 use App\core\middlewares\BaseMiddleware;
 use App\core\exception\ForbiddenException;
 use App\models\Role;
+use App\repositories\VendorRepository;
 
 class VendorMiddleware extends BaseMiddleware
 {
+    private VendorRepository $vendorRepository;
+    
+    public function __construct()
+    {
+        $this->vendorRepository = new VendorRepository();
+    }
+    
     public function execute()
     {
         $userData = Application::$app->session->get('user');
@@ -27,6 +35,13 @@ class VendorMiddleware extends BaseMiddleware
         if ($activeRole !== Role::VENDOR) {
             $userData['active_role'] = Role::VENDOR;
             Application::$app->session->set('user', $userData);
+        }
+        
+        $vendor = $this->vendorRepository->findByUserId($userData['id']);
+        
+        if (!$vendor || $vendor->status !== 'active') {
+            Application::$app->response->redirect('/vendor/waiting-approval');
+            exit;
         }
     }
 }

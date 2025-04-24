@@ -86,4 +86,65 @@ class VendorRepository extends Repository
         
         return $vendor->getRecentOrders($limit);
     }
+
+    public function findAll(array $conditions = [], bool $withTrashed = false, ?string $orderBy = null, ?int $limit = null, ?int $offset = null): array
+    {
+        $tableName = $this->table;
+        $sql = "SELECT * FROM $tableName";
+
+        $whereCondition = [];
+        $params = [];
+
+        if (!$withTrashed) {
+            $whereCondition[] = "deleted_at IS NULL";
+        }
+
+        if (!empty($conditions)) {
+            foreach ($conditions as $key => $value) {
+                $whereCondition[] = "$key = :$key";
+                $params[":$key"] = $value;
+            }
+        }
+
+        if (!empty($whereCondition)) {
+            $sql .= " WHERE " . implode(' AND ', $whereCondition);
+        }
+
+        if ($orderBy) {
+            $sql .= " ORDER BY $orderBy";
+        }
+
+        if ($limit) {
+            $sql .= " LIMIT :limit";
+            $params[":limit"] = $limit;
+        }
+
+        if ($offset) {
+            $sql .= " OFFSET :offset";
+            $params[":offset"] = $offset;
+        }
+        
+        // Log the query for debugging
+        error_log("Vendor query: $sql with params: " . json_encode($params));
+
+        try {
+            $statement = $this->db->pdo->prepare($sql);
+
+            foreach ($params as $key => $value) {
+                $paramType = is_int($value) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
+                $statement->bindValue($key, $value, $paramType);
+            }
+
+            $statement->execute();
+            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Log the result count
+            error_log("Found " . count($result) . " vendors matching the criteria");
+            
+            return $result;
+        } catch (\PDOException $e) {
+            error_log("Database error in VendorRepository::findAll: " . $e->getMessage());
+            return [];
+        }
+    }
 }
