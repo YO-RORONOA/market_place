@@ -74,7 +74,7 @@
             </div>
         </div>
         <div class="mt-3">
-            <a href="/vendor/analytics" class="text-xs text-white hover:text-white hover:underline font-medium flex items-center">
+            <a href="/seller/statistics" class="text-xs text-white hover:text-white hover:underline font-medium flex items-center">
                 View Analytics
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -305,7 +305,7 @@
         </div>
         
         <div class="mt-4 text-right">
-            <a href="/vendor/analytics" class="text-xs text-accent-teal hover:text-accent-navy font-medium inline-flex items-center">
+            <a href="/seller/statistics" class="text-xs text-accent-teal hover:text-accent-navy font-medium inline-flex items-center">
                 View Analytics
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             Orders
                         </a>
                         
-                        <a href="/vendor/analytics" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-accent-navy">
+                        <a href="/seller/statistics" class="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-accent-navy">
                             <svg class="mr-4 h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>

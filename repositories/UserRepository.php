@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\core\Application;
 use App\models\User;
 use App\repositories\Repository;
 use App\repositories\UserRoleRepository;
@@ -141,4 +142,23 @@ class UserRepository extends Repository
         
         return $user;
     }
+
+    public function countInDateRange(string $startDate, string $endDate): int
+{
+    try {
+        $sql = "SELECT COUNT(*) FROM {$this->table} 
+                WHERE created_at BETWEEN :start_date AND :end_date
+                AND deleted_at IS NULL";
+        
+        $statement = Application::$app->db->pdo->prepare($sql);
+        $statement->bindValue(':start_date', $startDate . ' 00:00:00');
+        $statement->bindValue(':end_date', $endDate . ' 23:59:59');
+        $statement->execute();
+        
+        return (int)$statement->fetchColumn();
+    } catch (\PDOException $e) {
+        error_log("Error counting users in date range: " . $e->getMessage());
+        return 0;
+    }
+}
 }

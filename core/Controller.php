@@ -1,19 +1,9 @@
 <?php
-/**
- * User: TheCodeholic
- * Date: 7/8/2020
- * Time: 8:43 AM
- */
+
 
 namespace App\core;
 
 
-/**
- * Class Controller
- *
- * @author  Zura Sekhniashvili <zurasekhniashvili@gmail.com>
- * @package app\core
- */
 class Controller
 {
     public string $layout = 'main';

@@ -54,5 +54,17 @@
          
          return $path;
      }
+
+     public function categoryExists(string $name, ?int $parentId = null): bool
+{
+    $conditions = ['name' => $name];
+    
+    if ($parentId !== null) {
+        $conditions['parent_id'] = $parentId;
+    }
+    
+    $result = $this->findAll($conditions);
+    return !empty($result);
+}
  
  }

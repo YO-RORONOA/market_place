@@ -1,5 +1,4 @@
 <?php
-// File: core/Database.php (modified)
 
 namespace App\core;
 

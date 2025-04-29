@@ -1,5 +1,4 @@
 <?php
-// File: web.php (Updated with error handling)
 
 use App\controllers\SiteController;
 use App\core\Application;
@@ -10,11 +9,9 @@ use App\core\exception\ExceptionHandler;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-// Load environment variables
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->load();
 
-// Define application configuration
 $config = [
     'db' => [
         'dsn' => $_ENV['DB_DSN'],
@@ -103,6 +100,7 @@ $app->router->get('/vendor/orders/view', [App\controllers\VendorController::clas
     $app->router->post('/vendor/products/generate-description', [VendorController::class, 'generateDescription']);
     $app->router->post('/vendor/products/generate-tags', [VendorController::class, 'generateTags']);
     $app->router->get('/vendor/orders', [VendorController::class, 'orders']);
+    $app->router->get('/seller/statistics', [VendorController::class, 'statistics']);
     
     $app->router->get('/vendor/switch', [VendorAuthController::class, 'switchToVendor']);
     $app->router->get('/buyer/switch', [VendorAuthController::class, 'switchToBuyer']);
@@ -122,24 +120,22 @@ $app->router->post('/admin/login', [App\controllers\AdminAuthController::class, 
 $app->router->get('/admin/logout', [App\controllers\AdminAuthController::class, 'logout']);
 
 // Admin dashboard route
-$app->router->get('/admin/dashboard', [App\controllers\AdminAuthController::class, 'dashboard']);
-
-// Admin vendor management routes
+$app->router->get('/admin/dashboard', [App\controllers\AdminController::class, 'dashboard']);
 $app->router->get('/admin/vendors', [App\controllers\AdminController::class, 'vendors']);
 $app->router->get('/admin/vendors/view', [App\controllers\AdminController::class, 'viewVendor']);
 $app->router->post('/admin/vendors/approve', [App\controllers\AdminController::class, 'approveVendor']);
 $app->router->post('/admin/vendors/reject', [App\controllers\AdminController::class, 'rejectVendor']);
 $app->router->post('/admin/vendors/suspend', [App\controllers\AdminController::class, 'suspendVendor']);
-
-// Admin statistics route
 $app->router->get('/admin/statistics', [App\controllers\AdminController::class, 'statistics']);
 
-// Admin export routes
+// Admin data export routes
 $app->router->get('/admin/export/users', [App\controllers\AdminController::class, 'exportUsers']);
 $app->router->get('/admin/export/vendors', [App\controllers\AdminController::class, 'exportVendors']);
 $app->router->get('/admin/export/orders', [App\controllers\AdminController::class, 'exportOrders']);
 $app->router->get('/admin/export/products', [App\controllers\AdminController::class, 'exportProducts']);
-$app->router->get('/vendor/waiting-approval', [App\controllers\VendorAuthController::class, 'waitingApproval']);
+
+// Admin categories management
+$app->router->post('/admin/categories/create', [App\controllers\AdminController::class, 'createCategory']);
     
     // Error routes (for testing)
     $app->router->get('/test/error', function() {
@@ -165,7 +161,6 @@ $app->router->get('/vendor/waiting-approval', [App\controllers\VendorAuthControl
         ]);
     });
     
-    // Run the application
     $app->run();
 } catch (Throwable $e) {
     // Catch any errors during application bootstrap

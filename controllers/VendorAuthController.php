@@ -61,85 +61,88 @@ class VendorAuthController extends Controller
     
     
     public function register(Request $request)
-    {
-        $user = new User();
-        $vendor = new Vendor();
+{
+    $user = new User();
+    $vendor = new Vendor();
+    
+    if ($request->isPost()) {
+        $userData = $request->getBody();
+        $user->loadData($userData);
+        $vendor->loadData($userData);
         
-        if ($request->isPost()) {
-            $userData = $request->getBody();
-            $user->loadData($userData);
-            $vendor->loadData($userData);
+        Application::$app->db->pdo->beginTransaction();
+        
+        try {
+            $existingUser = $this->userRepository->findByEmail($user->email);
             
-            Application::$app->db->pdo->beginTransaction();
-            
-            try {
-                $existingUser = $this->userRepository->findByEmail($user->email);
+            if ($existingUser) {
+                $existingUser->loadRoles();
                 
-                if ($existingUser) {
-                    $existingUser->loadRoles();
-                    
-                    if ($existingUser->hasRole(Role::VENDOR)) {
-                        $user->addError('email', 'This email is already registered as a vendor.');
-                        throw new \Exception('User already has vendor role');
-                    }
-                    
-                    $userId = $existingUser->id;
-                    
-                    if (!$this->authService->addRoleToUser($userId, Role::VENDOR)) {
-                        throw new \Exception('Failed to add vendor role to user');
-                    }
-                } else {
-                    if (!$user->validate()) {
-                        throw new \Exception('User validation failed');
-                    }
-                    
-                    $userId = $this->authService->register($userData, Role::VENDOR);
-                    
-                    if (!$userId) {
-                        throw new \Exception('Failed to register user');
-                    }
+                if ($existingUser->hasRole(Role::ADMIN)) {
+                    $user->addError('email', 'This email is reserved for administrative use only.');
+                    throw new \Exception('Admin email cannot be used for vendor registration');
+                }
+                else if ($existingUser->hasRole(Role::VENDOR)) {
+                    $user->addError('email', 'This email is already registered as a vendor.');
+                    throw new \Exception('User already has vendor role');
                 }
                 
-                $vendorData = [
-                    'user_id' => $userId,
-                    'store_name' => $vendor->store_name,
-                    'description' => $vendor->description,
-                    'status' => 'pending' 
-                ];
+                $userId = $existingUser->id;
                 
-                $vendorId = $this->vendorRepository->create($vendorData);
-                
-                if (!$vendorId) {
-                    throw new \Exception('Failed to create vendor profile');
+                if (!$this->authService->addRoleToUser($userId, Role::VENDOR)) {
+                    throw new \Exception('Failed to add vendor role to user');
+                }
+            } else {
+                if (!$user->validate()) {
+                    throw new \Exception('User validation failed');
                 }
                 
-                // $this->notifyAdminAboutNewVendor($user, $vendor);
+                $userId = $this->authService->register($userData, Role::VENDOR);
                 
-                Application::$app->db->pdo->commit();
-                
-                if ($existingUser) {
-                    $this->authService->login($existingUser->email, $userData['password'], false, Role::VENDOR);
-                    
-                    Application::$app->session->setFlash('success', 'Vendor profile created successfully! Your account is pending approval by an administrator.');
-                    Application::$app->response->redirect('/vendor/waiting-approval');
-                } else {
-                    Application::$app->session->setFlash('success', 'Thanks for registering as a vendor! Please check your email to verify your account. After verification, your account will be reviewed by an administrator.');
-                    Application::$app->session->set('verification_email', $user->email);
-                    Application::$app->response->redirect('/email-verification');
+                if (!$userId) {
+                    throw new \Exception('Failed to register user');
                 }
-                return;
-            } catch (\Exception $e) {
-                Application::$app->db->pdo->rollBack();
-                Application::$app->session->setFlash('error', 'Registration failed: ' . $e->getMessage());
             }
+            
+            $vendorData = [
+                'user_id' => $userId,
+                'store_name' => $vendor->store_name,
+                'description' => $vendor->description,
+                'status' => 'pending' 
+            ];
+            
+            $vendorId = $this->vendorRepository->create($vendorData);
+            
+            if (!$vendorId) {
+                throw new \Exception('Failed to create vendor profile');
+            }
+            
+            
+            Application::$app->db->pdo->commit();
+            
+            if ($existingUser) {
+                $this->authService->login($existingUser->email, $userData['password'], false, Role::VENDOR);
+                
+                Application::$app->session->setFlash('success', 'Vendor profile created successfully! Your account is pending approval by an administrator.');
+                Application::$app->response->redirect('/vendor/waiting-approval');
+            } else {
+                Application::$app->session->setFlash('success', 'Thanks for registering as a vendor! Please check your email to verify your account. After verification, your account will be reviewed by an administrator.');
+                Application::$app->session->set('verification_email', $user->email);
+                Application::$app->response->redirect('/email-verification');
+            }
+            return;
+        } catch (\Exception $e) {
+            Application::$app->db->pdo->rollBack();
+            Application::$app->session->setFlash('error', 'Registration failed: ' . $e->getMessage());
         }
-        
-        return $this->render('seller/auth/register', [
-            'userModel' => $user,
-            'vendorModel' => $vendor,
-            'title' => 'Become a Vendor'
-        ]);
     }
+    
+    return $this->render('seller/auth/register', [
+        'userModel' => $user,
+        'vendorModel' => $vendor,
+        'title' => 'Become a Vendor'
+    ]);
+}
    
     public function switchToBuyer()
     {

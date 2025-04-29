@@ -26,12 +26,7 @@ class AdminAuthController extends Controller
         // $this->registerMiddleware(new GuestMiddleware(['login']));
     }
     
-    /**
-     * Admin login page
-     * 
-     * @param Request $request
-     * @return string
-     */
+ 
     public function login(Request $request)
     {
         $loginForm = new LoginForm();
@@ -40,7 +35,6 @@ class AdminAuthController extends Controller
             $loginForm->loadData($request->getBody());
             
             if ($loginForm->validate()) {
-                // Attempt to login with admin role requirement
                 if ($this->authService->login($loginForm->email, $loginForm->password, $loginForm->rememberMe ?? false, Role::ADMIN)) {
                     Application::$app->session->setFlash('success', 'Welcome to the admin dashboard!');
                     Application::$app->response->redirect('/admin/dashboard');
@@ -56,12 +50,7 @@ class AdminAuthController extends Controller
             'title' => 'Admin Login'
         ]);
     }
-    
-    /**
-     * Admin logout functionality
-     * 
-     * @return void
-     */
+
     public function logout()
     {
         $this->authService->logout();
@@ -69,9 +58,7 @@ class AdminAuthController extends Controller
         Application::$app->response->redirect('/admin/login');
     }
     
-    /**
-     * Basic dashboard landing page (placeholder)
-     */
+    
     public function dashboard()
     {
         return $this->render('admin/dashboard', [

@@ -48,29 +48,21 @@ class AdminController extends Controller
      */
     public function vendors(Request $request)
     {
-        // Get status filter from request
         $status = $request->getQuery('status') ?? 'pending';
         
-        // Get vendors with the requested status
         $vendors = $this->vendorRepository->findAll(['status' => $status]);
         
-        // For debugging, let's log what we found
-        error_log("Found " . count($vendors) . " vendors with status '$status'");
         
-        // For each vendor, load the associated user data
         foreach ($vendors as &$vendor) {
             $userData = $this->userRepository->findOne($vendor['user_id']);
             if ($userData) {
                 $vendor['user'] = $userData;
-                // Calculate the number of products for this vendor
                 $vendor['productCount'] = $this->productRepository->countProducts(['vendor_id' => $vendor['user_id']]);
             } else {
-                // Log if user data wasn't found
                 error_log("User data not found for vendor ID: " . $vendor['id'] . ", user ID: " . $vendor['user_id']);
             }
         }
         
-        // Log all the status options and the current selection for debugging
         $statusOptions = [
             'pending' => 'Pending Approval',
             'active' => 'Active Vendors',
@@ -111,14 +103,11 @@ class AdminController extends Controller
             return '';
         }
         
-        // Load user data
         $userData = $this->userRepository->findOne($vendor['user_id']);
         $vendor['user'] = $userData;
         
-        // Load vendor statistics
         $vendor['productCount'] = $this->productRepository->countProducts(['vendor_id' => $vendor['user_id']]);
         
-        // Get vendor's products
         $products = $this->productRepository->findByVendor($vendor['user_id'], 5);
         
         return $this->render('admin/vendor-detail', [
@@ -149,7 +138,6 @@ class AdminController extends Controller
             return;
         }
         
-        // Get vendor data
         $vendor = $this->vendorRepository->findOne($vendorId);
         
         if (!$vendor) {
@@ -158,15 +146,11 @@ class AdminController extends Controller
             return;
         }
         
-        // Update vendor status to active
         $result = $this->vendorRepository->update($vendorId, ['status' => 'active']);
         
         if ($result) {
-            // Get user data to send notification email
             $user = $this->userRepository->findOne($vendor['user_id']);
             
-            // Send approval notification email
-            // For now, we'll just log the action
             error_log("Vendor {$vendor['store_name']} (ID: {$vendorId}) approved by admin");
             
             Application::$app->session->setFlash('success', 'Vendor approved successfully');
@@ -199,7 +183,6 @@ class AdminController extends Controller
             return;
         }
         
-        // Get vendor data
         $vendor = $this->vendorRepository->findOne($vendorId);
         
         if (!$vendor) {
@@ -208,15 +191,11 @@ class AdminController extends Controller
             return;
         }
         
-        // Update vendor status to rejected
         $result = $this->vendorRepository->update($vendorId, ['status' => 'rejected']);
         
         if ($result) {
-            // Get user data to send notification email
             $user = $this->userRepository->findOne($vendor['user_id']);
             
-            // Send rejection notification email
-            // For now, we'll just log the action
             error_log("Vendor {$vendor['store_name']} (ID: {$vendorId}) rejected by admin. Reason: {$reason}");
             
             Application::$app->session->setFlash('success', 'Vendor rejected successfully');
@@ -249,7 +228,6 @@ class AdminController extends Controller
             return;
         }
         
-        // Get vendor data
         $vendor = $this->vendorRepository->findOne($vendorId);
         
         if (!$vendor) {
@@ -258,15 +236,11 @@ class AdminController extends Controller
             return;
         }
         
-        // Update vendor status to suspended
         $result = $this->vendorRepository->update($vendorId, ['status' => 'suspended']);
         
         if ($result) {
-            // Get user data to send notification email
             $user = $this->userRepository->findOne($vendor['user_id']);
             
-            // Send suspension notification email
-            // For now, we'll just log the action
             error_log("Vendor {$vendor['store_name']} (ID: {$vendorId}) suspended by admin. Reason: {$reason}");
             
             Application::$app->session->setFlash('success', 'Vendor suspended successfully');
@@ -285,14 +259,11 @@ class AdminController extends Controller
      */
     public function statistics(Request $request)
     {
-        // Get date range filter from request (default to last 30 days)
         $dateRange = $request->getQuery('range') ?? '30days';
         
-        // Calculate start date based on range
         $endDate = date('Y-m-d');
         $startDate = $this->getStartDateFromRange($dateRange);
         
-        // Fetch statistics data
         $stats = $this->getStatistics($startDate, $endDate);
         
         return $this->render('admin/statistics', [
@@ -340,102 +311,162 @@ class AdminController extends Controller
      * @return array Statistics data
      */
     private function getStatistics(string $startDate, string $endDate): array
-    {
-        // User statistics
-        $totalUsers = $this->userRepository->count();
-        $activeUsers = $this->userRepository->count(['status' => 'active']);
-        
-        // Since your model doesn't have a direct way to count by date range,
-        // we'll create a placeholder for now
-        $newUsers = 0;
-        
-        // Vendor statistics
-        $totalVendors = $this->vendorRepository->count();
-        $pendingVendors = $this->vendorRepository->count(['status' => 'pending']);
-        $activeVendors = $this->vendorRepository->count(['status' => 'active']);
-        
-        // Order statistics
-        $totalOrders = $this->orderRepository->count();
-        $completedOrders = $this->orderRepository->countByStatus('completed');
-        
-        // Calculate total revenue (simulated data for now)
-        $totalRevenue = 0; // In a real implementation, this would come from the database
-        
-        // Get product statistics
-        $totalProducts = $this->productRepository->countProducts();
-        
-        // Get category distribution
-        $categories = $this->categoryRepository->getMainCategories();
-        $categoryStats = [];
-        
-        foreach ($categories as $category) {
-            $productCount = $this->productRepository->countProducts(['category_id' => $category['id']]);
-            $categoryStats[] = [
-                'name' => $category['name'],
-                'count' => $productCount
-            ];
-        }
-        
-        // Simulate monthly data for charts
-        $months = [];
-        $userRegistrationData = [];
-        $revenueData = [];
-        
-        // Generate data for the last 6 months
-        for ($i = 5; $i >= 0; $i--) {
-            $month = date('M Y', strtotime("-$i months"));
-            $months[] = $month;
-            
-            // In a real implementation, these would be actual counts from database
-            $userRegistrationData[] = rand(0, 10); // Random data for demonstration
-            $revenueData[] = rand(0, 5000); // Random data for demonstration
-        }
-        
-        return [
-            'userStats' => [
-                'total' => $totalUsers,
-                'new' => $newUsers,
-                'active' => $activeUsers
-            ],
-            'vendorStats' => [
-                'total' => $totalVendors,
-                'pending' => $pendingVendors,
-                'active' => $activeVendors
-            ],
-            'orderStats' => [
-                'total' => $totalOrders,
-                'completed' => $completedOrders,
-                'revenue' => $totalRevenue
-            ],
-            'productStats' => [
-                'total' => $totalProducts,
-                'categories' => $categoryStats
-            ],
-            'chartData' => [
-                'months' => $months,
-                'userRegistrations' => $userRegistrationData,
-                'revenue' => $revenueData
-            ]
+{
+    $totalUsers = $this->userRepository->count();
+    $activeUsers = $this->userRepository->count(['status' => 'active']);
+    
+    $newUsers = $this->userRepository->countInDateRange($startDate, $endDate);
+    
+    $totalVendors = $this->vendorRepository->count();
+    $pendingVendors = $this->vendorRepository->count(['status' => 'pending']);
+    $activeVendors = $this->vendorRepository->count(['status' => 'active']);
+    
+    $totalOrders = $this->orderRepository->count();
+    $completedOrders = $this->orderRepository->countByStatus('completed');
+    
+    $totalRevenue = $this->orderRepository->totalRevenue();
+    $periodRevenue = $this->orderRepository->getRevenueInDateRange($startDate, $endDate);
+    
+    $totalProducts = $this->productRepository->countProducts();
+    
+    $categories = $this->categoryRepository->getMainCategories();
+    $categoryStats = [];
+    
+    foreach ($categories as $category) {
+        $productCount = $this->productRepository->countProducts(['category_id' => $category['id']]);
+        $categoryStats[] = [
+            'name' => $category['name'],
+            'count' => $productCount
         ];
     }
+    
+    $chartData = $this->generateChartData($startDate, $endDate);
+    
+    return [
+        'userStats' => [
+            'total' => $totalUsers,
+            'new' => $newUsers,
+            'active' => $activeUsers
+        ],
+        'vendorStats' => [
+            'total' => $totalVendors,
+            'pending' => $pendingVendors,
+            'active' => $activeVendors
+        ],
+        'orderStats' => [
+            'total' => $totalOrders,
+            'completed' => $completedOrders,
+            'revenue' => $totalRevenue,
+            'periodRevenue' => $periodRevenue
+        ],
+        'productStats' => [
+            'total' => $totalProducts,
+            'categories' => $categoryStats
+        ],
+        'chartData' => $chartData
+    ];
+}
+
+    
+
+
+private function generateChartData(string $startDate, string $endDate): array
+{
+    $months = [];
+    $userRegistrationData = [];
+    $revenueData = [];
+    
+    $interval = $this->determineChartInterval($startDate, $endDate);
+    
+    if ($interval === 'daily') {
+        $startDateTime = new \DateTime($startDate);
+        $endDateTime = new \DateTime($endDate);
+        $periodDays = $endDateTime->diff($startDateTime)->days + 1;
+        
+        $periodDays = min($periodDays, 30);
+        $currentDate = new \DateTime($endDate);
+        $currentDate->modify('-' . ($periodDays - 1) . ' days');
+        
+        for ($i = 0; $i < $periodDays; $i++) {
+            $dayDate = $currentDate->format('Y-m-d');
+            $months[] = $currentDate->format('d M');
+            
+            $userRegistrationData[] = $this->userRepository->countInDateRange($dayDate, $dayDate);
+            
+            $revenueData[] = $this->orderRepository->getRevenueInDateRange($dayDate, $dayDate);
+            
+            $currentDate->modify('+1 day');
+        }
+    } else {
+        $startDateTime = new \DateTime($startDate);
+        $endDateTime = new \DateTime($endDate);
+        $startDateTime->modify('first day of this month');
+        $endDateTime->modify('first day of next month');
+        
+        $period = new \DatePeriod(
+            $startDateTime,
+            new \DateInterval('P1M'),
+            $endDateTime
+        );
+        
+        $datePoints = iterator_count($period);
+        if ($datePoints > 6) {
+            $endDateTime = new \DateTime($endDate);
+            $endDateTime->modify('first day of next month');
+            $startDateTime = clone $endDateTime;
+            $startDateTime->modify('-5 months');
+            
+            $period = new \DatePeriod(
+                $startDateTime,
+                new \DateInterval('P1M'),
+                $endDateTime
+            );
+        }
+        
+        foreach ($period as $date) {
+            $monthStart = $date->format('Y-m-d');
+            $monthEnd = $date->format('Y-m-t');
+            $months[] = $date->format('M Y');
+            
+            $userRegistrationData[] = $this->userRepository->countInDateRange($monthStart, $monthEnd);
+            
+            $revenueData[] = $this->orderRepository->getRevenueInDateRange($monthStart, $monthEnd);
+        }
+    }
+    
+    return [
+        'months' => $months,
+        'userRegistrations' => $userRegistrationData,
+        'revenue' => $revenueData
+    ];
+}
+private function determineChartInterval(string $startDate, string $endDate): string
+{
+    $start = new \DateTime($startDate);
+    $end = new \DateTime($endDate);
+    $diff = $end->diff($start);
+    
+    // For periods of 31 days or less, use daily interval
+    if ($diff->days <= 31) {
+        return 'daily';
+    }
+    
+    // Otherwise use monthly
+    return 'monthly';
+}
 
 
     public function exportUsers()
     {
-        // Get all users
         $users = $this->userRepository->findAll();
         
-        // Set headers for CSV download
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="users_export_' . date('Y-m-d') . '.csv"');
         
-        // Create a file handle for php://output
         $output = fopen('php://output', 'w');
         
-        // Add CSV headers
         fputcsv($output, ['ID', 'First Name', 'Last Name', 'Email', 'Status', 'Created At']);
         
-        // Add user data
         foreach ($users as $user) {
             fputcsv($output, [
                 $user['id'],
@@ -458,20 +489,15 @@ class AdminController extends Controller
      */
     public function exportVendors()
     {
-        // Get all vendors
         $vendors = $this->vendorRepository->findAll();
         
-        // Set headers for CSV download
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="vendors_export_' . date('Y-m-d') . '.csv"');
         
-        // Create a file handle for php://output
         $output = fopen('php://output', 'w');
         
-        // Add CSV headers
         fputcsv($output, ['ID', 'User ID', 'Store Name', 'Status', 'Created At']);
         
-        // Add vendor data
         foreach ($vendors as $vendor) {
             fputcsv($output, [
                 $vendor['id'],
@@ -493,20 +519,15 @@ class AdminController extends Controller
      */
     public function exportOrders()
     {
-        // Get all orders
         $orders = $this->orderRepository->findAll();
         
-        // Set headers for CSV download
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="orders_export_' . date('Y-m-d') . '.csv"');
         
-        // Create a file handle for php://output
         $output = fopen('php://output', 'w');
         
-        // Add CSV headers
         fputcsv($output, ['ID', 'User ID', 'Total Amount', 'Status', 'Payment Method', 'Created At']);
         
-        // Add order data
         foreach ($orders as $order) {
             fputcsv($output, [
                 $order['id'],
@@ -529,22 +550,16 @@ class AdminController extends Controller
      */
     public function exportProducts()
     {
-        // Get all products
         $products = $this->productRepository->findAll();
         
-        // Set headers for CSV download
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="products_export_' . date('Y-m-d') . '.csv"');
         
-        // Create a file handle for php://output
         $output = fopen('php://output', 'w');
         
-        // Add CSV headers
         fputcsv($output, ['ID', 'Name', 'Price', 'Stock', 'Category', 'Vendor ID', 'Status', 'Created At']);
         
-        // Add product data
         foreach ($products as $product) {
-            // Get category name
             $category = $this->categoryRepository->findOne($product['category_id']);
             $categoryName = $category ? $category['name'] : 'Unknown';
             
@@ -563,4 +578,135 @@ class AdminController extends Controller
         fclose($output);
         exit;
     }
+
+
+    public function dashboard()
+{
+    $totalUsers = $this->userRepository->count();
+    $activeUsers = $this->userRepository->count(['status' => 'active']);
+    
+    $totalVendors = $this->vendorRepository->count();
+    $pendingVendors = $this->vendorRepository->count(['status' => 'pending']);
+    $activeVendors = $this->vendorRepository->count(['status' => 'active']);
+    
+    $totalProducts = $this->productRepository->countProducts();
+    
+    $totalOrders = $this->orderRepository->count();
+    $completedOrders = $this->orderRepository->countByStatus('completed');
+    
+    $totalRevenue = $this->orderRepository->totalRevenue();
+    
+    $categories = $this->categoryRepository->getMainCategories();
+    
+    return $this->render('admin/dashboard', [
+        'title' => 'Admin Dashboard',
+        'stats' => [
+            'users' => [
+                'total' => $totalUsers,
+                'active' => $activeUsers
+            ],
+            'vendors' => [
+                'total' => $totalVendors,
+                'pending' => $pendingVendors,
+                'active' => $activeVendors
+            ],
+            'products' => [
+                'total' => $totalProducts
+            ],
+            'orders' => [
+                'total' => $totalOrders,
+                'completed' => $completedOrders
+            ],
+            'revenue' => $totalRevenue,
+            'categories' => $categories
+        ]
+    ]);
+}
+
+public function createCategory(Request $request)
+{
+    if (!$request->isPost()) {
+        Application::$app->response->redirect('/admin/dashboard');
+        return;
+    }
+    
+    $data = $request->getBody();
+    $name = $data['name'] ?? '';
+    $parentId = !empty($data['parent_id']) ? (int)$data['parent_id'] : null;
+    
+    if (empty($name)) {
+        Application::$app->session->setFlash('error', 'Category name is required');
+        Application::$app->response->redirect('/admin/dashboard');
+        return;
+    }
+    
+    if ($parentId) {
+        $parent = $this->categoryRepository->findOne($parentId);
+        if (!$parent) {
+            Application::$app->session->setFlash('error', 'Parent category not found');
+            Application::$app->response->redirect('/admin/dashboard');
+            return;
+        }
+    }
+    
+    $categoryNames = array_map('trim', explode(',', $name));
+    $createdCount = 0;
+    $errorCount = 0;
+    $duplicateCount = 0;
+    $duplicateNames = [];
+    
+    foreach ($categoryNames as $categoryName) {
+        if (empty($categoryName)) continue;
+        
+        try {
+            if ($this->categoryRepository->categoryExists($categoryName, $parentId)) {
+                $duplicateCount++;
+                $duplicateNames[] = $categoryName;
+                continue;
+            }
+            
+            $categoryData = [
+                'name' => $categoryName,
+                'parent_id' => $parentId
+            ];
+            
+            $result = $this->categoryRepository->create($categoryData);
+            
+            if ($result) {
+                $createdCount++;
+            } else {
+                $errorCount++;
+            }
+        } catch (\Exception $e) {
+            error_log("Error creating category: " . $e->getMessage());
+            $errorCount++;
+        }
+    }
+    
+    if ($createdCount > 0) {
+        if ($createdCount === 1) {
+            Application::$app->session->setFlash('success', 'Category created successfully');
+        } else {
+            Application::$app->session->setFlash('success', $createdCount . ' categories created successfully');
+        }
+    }
+    
+    if ($duplicateCount > 0) {
+        $duplicateMessage = $duplicateCount === 1 
+            ? 'Category "' . implode('", "', $duplicateNames) . '" already exists'
+            : $duplicateCount . ' categories already exist: "' . implode('", "', $duplicateNames) . '"';
+        
+        Application::$app->session->setFlash('info', $duplicateMessage);
+    }
+    
+    if ($errorCount > 0) {
+        if ($createdCount === 0 && $duplicateCount === 0) {
+            Application::$app->session->setFlash('error', 'Failed to create categories');
+        } else {
+            Application::$app->session->setFlash('error', $errorCount . ' categories failed to create');
+        }
+    }
+    
+    Application::$app->response->redirect('/admin/dashboard');
+}
 }

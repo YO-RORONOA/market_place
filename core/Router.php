@@ -1,18 +1,8 @@
 <?php
-/**
- * User: TheCodeholic
- * Date: 7/7/2020
- * Time: 10:01 AM
- */
 
 namespace App\core;
 
-/**
- * Class Router
- *
- * @author  Zura Sekhniashvili <zurasekhniashvili@gmail.com>
- * @package thecodeholic\mvc
- */
+
 class Router
 {
     private Request $request;
@@ -41,7 +31,7 @@ class Router
         $callback = $this->routeMap[$method][$url] ?? false;
 
 
-        $fileExtension = pathinfo($url, PATHINFO_EXTENSION);
+        $fileExtension = pathinfo($url, PATHINFO_EXTENSION); // let webserver handle static files instead of router
         $staticExtensions = ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'ico'];
         
         if (in_array(strtolower($fileExtension), $staticExtensions)) {

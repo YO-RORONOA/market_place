@@ -797,8 +797,7 @@ class VendorController extends Controller
     $success = $this->orderRepository->update($orderId, $updateData);
     
     if ($success && !empty($data['note'])) {
-        // You would need an OrderNoteRepository to properly implement this
-        // For now, we'll just include it in the response
+    
     }
     
     header('Content-Type: application/json');
@@ -943,5 +942,195 @@ public function addOrderNote(Request $request)
         ]
     ]);
     exit;
+}
+
+
+public function statistics(Request $request)
+{
+    $vendorId = Application::$app->session->get('user')['id'] ?? 0;
+    $dateRange = $request->getQuery('range') ?? '30days';
+    
+    // Determine date range
+    $endDate = date('Y-m-d');
+    $startDate = $this->getStartDateFromRange($dateRange);
+    
+    // Get basic statistics
+    $stats = $this->getVendorStatistics($vendorId, $startDate, $endDate);
+    
+    // Get top selling products
+    $topProducts = $this->getTopSellingProducts($vendorId, 5);
+    
+    // Get monthly performance data
+    $monthlyData = $this->getMonthlyPerformance($vendorId, 6);
+    
+    return $this->render('seller/statistics', [
+        'title' => 'Store Statistics',
+        'stats' => $stats,
+        'topProducts' => $topProducts,
+        'monthlyData' => $monthlyData,
+        'dateRange' => $dateRange
+    ]);
+}
+
+
+private function getStartDateFromRange(string $range): string
+{
+    switch ($range) {
+        case '7days':
+            return date('Y-m-d', strtotime('-7 days'));
+        case '30days':
+            return date('Y-m-d', strtotime('-30 days'));
+        case '90days':
+            return date('Y-m-d', strtotime('-90 days'));
+        case 'year':
+            return date('Y-m-d', strtotime('-1 year'));
+        case 'all':
+        default:
+            return '2000-01-01'; // Effectively "all time"
+    }
+}
+
+
+private function getVendorStatistics(int $vendorId, string $startDate, string $endDate): array
+{
+    // Get total product count
+    $totalProducts = $this->productRepository->countProducts(['vendor_id' => $vendorId]);
+    $activeProducts = $this->productRepository->countProducts(['vendor_id' => $vendorId, 'status' => 'active']);
+    
+    // Get order status counts
+    $pendingOrders = count($this->getVendorOrdersByStatus($vendorId, 'pending'));
+    $processingOrders = count($this->getVendorOrdersByStatus($vendorId, 'processing'));
+    $shippedOrders = count($this->getVendorOrdersByStatus($vendorId, 'shipped'));
+    $completedOrders = count($this->getVendorOrdersByStatus($vendorId, 'completed'));
+    $cancelledOrders = count($this->getVendorOrdersByStatus($vendorId, 'cancelled'));
+    
+    $totalOrders = $pendingOrders + $processingOrders + $shippedOrders + $completedOrders + $cancelledOrders;
+    
+    // Get revenue data
+    $sql = "SELECT SUM(oi.price * oi.quantity) as total_revenue
+            FROM order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            JOIN products p ON oi.product_id = p.id
+            WHERE p.vendor_id = :vendor_id
+            AND o.deleted_at IS NULL
+            AND p.deleted_at IS NULL
+            AND o.status IN ('completed', 'shipped', 'processing')";
+    
+    $statement = Application::$app->db->pdo->prepare($sql);
+    $statement->bindValue(':vendor_id', $vendorId);
+    $statement->execute();
+    
+    $revenue = (float)$statement->fetchColumn() ?: 0;
+    
+    $sqlPeriod = $sql . " AND o.created_at BETWEEN :start_date AND :end_date";
+    $statementPeriod = Application::$app->db->pdo->prepare($sqlPeriod);
+    $statementPeriod->bindValue(':vendor_id', $vendorId);
+    $statementPeriod->bindValue(':start_date', $startDate . ' 00:00:00');
+    $statementPeriod->bindValue(':end_date', $endDate . ' 23:59:59');
+    $statementPeriod->execute();
+    
+    $periodRevenue = (float)$statementPeriod->fetchColumn() ?: 0;
+    
+    $sqlPeriodOrders = "SELECT COUNT(DISTINCT o.id)
+                        FROM orders o
+                        JOIN order_items oi ON o.id = oi.order_id
+                        JOIN products p ON oi.product_id = p.id
+                        WHERE p.vendor_id = :vendor_id
+                        AND o.deleted_at IS NULL
+                        AND p.deleted_at IS NULL
+                        AND o.created_at BETWEEN :start_date AND :end_date";
+    
+    $statementPeriodOrders = Application::$app->db->pdo->prepare($sqlPeriodOrders);
+    $statementPeriodOrders->bindValue(':vendor_id', $vendorId);
+    $statementPeriodOrders->bindValue(':start_date', $startDate . ' 00:00:00');
+    $statementPeriodOrders->bindValue(':end_date', $endDate . ' 23:59:59');
+    $statementPeriodOrders->execute();
+    
+    $periodOrders = (int)$statementPeriodOrders->fetchColumn() ?: 0;
+    
+    return [
+        'totalProducts' => $totalProducts,
+        'activeProducts' => $activeProducts,
+        'totalOrders' => $totalOrders,
+        'completedOrders' => $completedOrders,
+        'revenue' => $revenue,
+        'periodRevenue' => $periodRevenue,
+        'periodOrders' => $periodOrders,
+        'orderStatus' => [
+            'pending' => $pendingOrders,
+            'processing' => $processingOrders,
+            'shipped' => $shippedOrders,
+            'completed' => $completedOrders,
+            'cancelled' => $cancelledOrders
+        ]
+    ];
+}
+
+
+private function getTopSellingProducts(int $vendorId, int $limit = 5): array
+{
+    $sql = "SELECT p.id, p.name, p.price, p.image_path,
+                   SUM(oi.quantity) AS units_sold,
+                   SUM(oi.price * oi.quantity) AS revenue
+            FROM products p
+            JOIN order_items oi ON p.id = oi.product_id
+            JOIN orders o ON oi.order_id = o.id
+            WHERE p.vendor_id = :vendor_id
+            AND p.deleted_at IS NULL
+            AND o.deleted_at IS NULL
+            AND o.status IN ('completed', 'shipped', 'processing')
+            GROUP BY p.id, p.name, p.price, p.image_path
+            ORDER BY units_sold DESC
+            LIMIT :limit";
+    
+    $statement = Application::$app->db->pdo->prepare($sql);
+    $statement->bindValue(':vendor_id', $vendorId);
+    $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
+    $statement->execute();
+    
+    return $statement->fetchAll(\PDO::FETCH_ASSOC);
+}
+
+
+private function getMonthlyPerformance(int $vendorId, int $months = 6): array
+{
+    $sql = "SELECT 
+                DATE_FORMAT(o.created_at, '%b %Y') AS month,
+                COUNT(DISTINCT o.id) AS orders,
+                SUM(oi.price * oi.quantity) AS revenue
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            WHERE p.vendor_id = :vendor_id
+            AND o.deleted_at IS NULL
+            AND p.deleted_at IS NULL
+            AND o.status IN ('completed', 'shipped', 'processing')
+            GROUP BY month
+            ORDER BY MIN(o.created_at) DESC
+            LIMIT :limit";
+    
+    if (strpos($_ENV['DB_DSN'] ?? '', 'pgsql') !== false) {
+        $sql = "SELECT 
+                    TO_CHAR(o.created_at, 'Mon YYYY') AS month,
+                    COUNT(DISTINCT o.id) AS orders,
+                    SUM(oi.price * oi.quantity) AS revenue
+                FROM orders o
+                JOIN order_items oi ON o.id = oi.order_id
+                JOIN products p ON oi.product_id = p.id
+                WHERE p.vendor_id = :vendor_id
+                AND o.deleted_at IS NULL
+                AND p.deleted_at IS NULL
+                AND o.status IN ('completed', 'shipped', 'processing')
+                GROUP BY month
+                ORDER BY MIN(o.created_at) DESC
+                LIMIT :limit";
+    }
+    
+    $statement = Application::$app->db->pdo->prepare($sql);
+    $statement->bindValue(':vendor_id', $vendorId);
+    $statement->bindValue(':limit', $months, \PDO::PARAM_INT);
+    $statement->execute();
+    
+    return $statement->fetchAll(\PDO::FETCH_ASSOC);
 }
 }

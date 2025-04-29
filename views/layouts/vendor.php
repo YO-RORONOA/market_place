@@ -132,7 +132,7 @@ use App\core\Application;
                     </a>
                     
                     <?php if (in_array(\App\models\Role::BUYER, Application::$app->session->get('user')['roles'] ?? [])): ?>
-                    <a href="/switch-to-buyer" class="px-2 py-1 rounded-md text-sm font-medium text-gray-600 hover:text-accent-teal hover:bg-gray-100 transition-colors duration-200 flex items-center">
+                    <a href="/buyer/switch" class="px-2 py-1 rounded-md text-sm font-medium text-gray-600 hover:text-accent-teal hover:bg-gray-100 transition-colors duration-200 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                         </svg>
@@ -284,7 +284,7 @@ use App\core\Application;
                         </svg>
                         Orders
                     </a>
-                    <a href="/vendor/analytics" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-100">
+                    <a href="/seller/statistics" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-100">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
@@ -352,7 +352,7 @@ use App\core\Application;
                         </a>
                     </li>
                     <li>
-                        <a href="/vendor/analytics" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-100">
+                        <a href="/seller/statistics" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-100">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>

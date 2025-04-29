@@ -49,7 +49,7 @@ class MigrationRunner
                 continue;
             }
             
-            require_once $this->migrationsDir . '/' . $migration;
+            require_once $this->migrationsDir . '/' . $migration; //tobe used by up
             $className = pathinfo($migration, PATHINFO_FILENAME);
             $instance = new $className();
             

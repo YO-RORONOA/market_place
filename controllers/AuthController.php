@@ -63,47 +63,50 @@ class AuthController extends Controller
 }
     
     
-    public function register(Request $request)
-    {
-        $user = new User();
+public function register(Request $request)
+{
+    $user = new User();
+    
+    if ($request->isPost()) {
+        $userData = $request->getBody();
+        $user->loadData($userData);
         
-        if ($request->isPost()) {
-            $userData = $request->getBody();
-            $user->loadData($userData);
+        $existingUser = $this->userRepository->findByEmail($user->email);
+        
+        if ($existingUser) {
+            $existingUser->loadRoles();
             
-            $existingUser = $this->userRepository->findByEmail($user->email);
-            
-            if ($existingUser) {
-                $existingUser->loadRoles();
-                
-                if ($existingUser->hasRole(Role::BUYER)) {
-                    $user->addError('email', 'This email is already registered.');
-                } else {
-                    if ($this->authService->addRoleToUser($existingUser->id, Role::BUYER)) { 
-                        Application::$app->session->setFlash('success', 'Your account has been updated with buyer privileges.');
-                        Application::$app->response->redirect('/login');
-                        return;
-                    } else {
-                        Application::$app->session->setFlash('error', 'Failed to update account.');
-                    }
-                }
+            if ($existingUser->hasRole(Role::ADMIN)) {
+                $user->addError('email', 'This email is reserved for administrative use only.');
+            }
+            else if ($existingUser->hasRole(Role::BUYER)) {
+                $user->addError('email', 'This email is already registered.');
             } else {
-                $user->primary_role_id = Role::BUYER;
-                
-                if ($user->validate() && $this->authService->register($userData, Role::BUYER)) {  //passing userdata instead of user object for seperation of concerns(best practices)
-                    Application::$app->session->setFlash('success', 'Thanks for registering! Please check your email to verify your account.');
-                    Application::$app->session->set('verification_email', $user->email);
-                    Application::$app->response->redirect('/email-verification');
+                if ($this->authService->addRoleToUser($existingUser->id, Role::BUYER)) { 
+                    Application::$app->session->setFlash('success', 'Your account has been updated with buyer privileges.');
+                    Application::$app->response->redirect('/login');
                     return;
+                } else {
+                    Application::$app->session->setFlash('error', 'Failed to update account.');
                 }
             }
+        } else {
+            $user->primary_role_id = Role::BUYER;
+            
+            if ($user->validate() && $this->authService->register($userData, Role::BUYER)) {
+                Application::$app->session->setFlash('success', 'Thanks for registering! Please check your email to verify your account.');
+                Application::$app->session->set('verification_email', $user->email);
+                Application::$app->response->redirect('/email-verification');
+                return;
+            }
         }
-        
-        return $this->render('auth/register', [
-            'model' => $user,
-            'title' => 'Create Account'
-        ]);
     }
+    
+    return $this->render('auth/register', [
+        'model' => $user,
+        'title' => 'Create Account'
+    ]);
+}
     
     
     public function logout()
