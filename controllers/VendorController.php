@@ -928,7 +928,6 @@ public function addOrderNote(Request $request)
     }
     
     
-    // Return JSON response
     header('Content-Type: application/json');
     echo json_encode([
         'success' => true,
@@ -1006,7 +1005,6 @@ private function getVendorStatistics(int $vendorId, string $startDate, string $e
     
     $totalOrders = $pendingOrders + $processingOrders + $shippedOrders + $completedOrders + $cancelledOrders;
     
-    // Get revenue data
     $sql = "SELECT SUM(oi.price * oi.quantity) as total_revenue
             FROM order_items oi
             JOIN orders o ON oi.order_id = o.id

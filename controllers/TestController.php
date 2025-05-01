@@ -13,7 +13,6 @@ class TestController extends Controller
      */
     public function loadTestCart()
     {
-        // Define test products
         $testProducts = [
             [
                 'product_id' => 1,
@@ -48,7 +47,6 @@ class TestController extends Controller
             []
         ));
         
-        // Set a user session for testing (if not already logged in)
         if (!Application::$app->session->get('user')) {
             Application::$app->session->set('user', [
                 'id' => 1, 

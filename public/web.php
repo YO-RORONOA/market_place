@@ -89,6 +89,7 @@ $app->router->get('/vendor/orders/view', [App\controllers\VendorController::clas
     $app->router->post('/vendor/login', [VendorAuthController::class, 'login']);
     $app->router->get('/vendor/register', [VendorAuthController::class, 'register']);
     $app->router->post('/vendor/register', [VendorAuthController::class, 'register']);
+    $app->router->get('/vendor/waiting-approval', [VendorAuthController::class, 'waitingApproval']);
     
     $app->router->get('/vendor/dashboard', [VendorController::class, 'dashboard']);
     $app->router->get('/vendor/products', [VendorController::class, 'products']);

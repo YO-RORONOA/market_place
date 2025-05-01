@@ -28,7 +28,6 @@ class AdminController extends Controller
         parent::__construct();
         $this->setLayout('admin');
         
-        // Initialize repositories
         $this->vendorRepository = new VendorRepository();
         $this->userRepository = new UserRepository();
         $this->orderRepository = new OrderRepository();
@@ -36,8 +35,7 @@ class AdminController extends Controller
         $this->categoryRepository = new CategoryRepository();
         $this->emailService = new EmailService();
         
-        // Use admin middleware to protect all controller actions
-        // $this->registerMiddleware(new AdminMiddleware());
+        $this->registerMiddleware(new AdminMiddleware());
     }
     
     /**

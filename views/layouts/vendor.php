@@ -90,7 +90,7 @@ use App\core\Application;
             <!-- Right: Action Buttons -->
             <div class="flex items-center space-x-1 md:space-x-3">
                 <!-- Create New Button -->
-                <div class="relative group">
+                <div class="relative">
                     <button id="createNewBtn" class="p-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-accent-teal focus:outline-none transition-colors duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -104,23 +104,8 @@ use App\core\Application;
                             </svg>
                             New Product
                         </a>
-                        <a href="#" class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-accent-ochre" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            New Promotion
-                        </a>
                     </div>
                 </div>
-                
-                <!-- Notifications -->
-                <button id="notificationsBtn" class="p-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-accent-teal focus:outline-none transition-colors duration-200 relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <!-- Notification badge - only shows when there are notifications -->
-                    <span class="absolute -top-1 -right-1 bg-accent-terracotta text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">3</span>
-                </button>
                 
                 <!-- Desktop navigation -->
                 <nav class="hidden md:flex items-center space-x-1">
@@ -142,7 +127,7 @@ use App\core\Application;
                 </nav>
                 
                 <!-- User profile dropdown -->
-                <div class="relative group">
+                <div class="relative">
                     <button id="userProfileBtn" class="flex items-center p-1 rounded-full hover:bg-gray-100 transition-colors duration-200 focus:outline-none">
                         <div class="w-8 h-8 rounded-full bg-accent-teal text-white flex items-center justify-center text-sm font-medium">
                             <?= strtoupper(substr(Application::$app->session->get('user')['email'] ?? 'U', 0, 1)) ?>
@@ -178,67 +163,6 @@ use App\core\Application;
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Notifications Panel (Hidden by default) -->
-    <div id="notificationsPanel" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-10 mr-4">
-        <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
-            <h3 class="text-sm font-medium text-gray-900">Notifications</h3>
-            <button class="text-xs text-accent-teal hover:text-accent-navy">Mark all as read</button>
-        </div>
-        <div class="max-h-96 overflow-y-auto">
-            <a href="#" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
-                <div class="flex">
-                    <div class="flex-shrink-0 mr-3">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">New order received!</p>
-                        <p class="text-xs text-gray-500">Someone purchased "Handcrafted Moroccan Plate"</p>
-                        <p class="text-xs text-gray-400 mt-1">10 minutes ago</p>
-                    </div>
-                </div>
-            </a>
-            <a href="#" class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100">
-                <div class="flex">
-                    <div class="flex-shrink-0 mr-3">
-                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">Payment completed</p>
-                        <p class="text-xs text-gray-500">You received a payment of $79.99</p>
-                        <p class="text-xs text-gray-400 mt-1">1 hour ago</p>
-                    </div>
-                </div>
-            </a>
-            <a href="#" class="block px-4 py-3 hover:bg-gray-50">
-                <div class="flex">
-                    <div class="flex-shrink-0 mr-3">
-                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">Low stock alert</p>
-                        <p class="text-xs text-gray-500">Blue Moroccan Ceramic Tagine (2 left)</p>
-                        <p class="text-xs text-gray-400 mt-1">Yesterday</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="px-4 py-2 border-t border-gray-100 text-center">
-            <a href="#" class="text-sm text-accent-teal hover:text-accent-navy">View all notifications</a>
         </div>
     </div>
 </header>
@@ -449,6 +373,40 @@ use App\core\Application;
                 }
             }
             
+            // User profile dropdown toggle
+            const userProfileBtn = document.getElementById('userProfileBtn');
+            const userProfileDropdown = document.getElementById('userProfileDropdown');
+            
+            if (userProfileBtn && userProfileDropdown) {
+                userProfileBtn.addEventListener('click', function() {
+                    userProfileDropdown.classList.toggle('hidden');
+                });
+                
+                // Close profile dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userProfileBtn.contains(event.target) && !userProfileDropdown.contains(event.target)) {
+                        userProfileDropdown.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Create New dropdown toggle
+            const createNewBtn = document.getElementById('createNewBtn');
+            const createNewDropdown = document.getElementById('createNewDropdown');
+            
+            if (createNewBtn && createNewDropdown) {
+                createNewBtn.addEventListener('click', function() {
+                    createNewDropdown.classList.toggle('hidden');
+                });
+                
+                // Close create new dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!createNewBtn.contains(event.target) && !createNewDropdown.contains(event.target)) {
+                        createNewDropdown.classList.add('hidden');
+                    }
+                });
+            }
+            
             // Highlight current page in navigation
             const currentPath = window.location.pathname;
             const navLinks = document.querySelectorAll('nav a');
@@ -462,7 +420,3 @@ use App\core\Application;
             });
         });
     </script>
-    
-    <script src="/assets/js/vendor.js"></script>
-</body>
-</html>

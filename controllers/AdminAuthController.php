@@ -23,7 +23,7 @@ class AdminAuthController extends Controller
         $this->authService = new AuthService();
         
         // Use guest middleware for login
-        // $this->registerMiddleware(new GuestMiddleware(['login']));
+        $this->registerMiddleware(new GuestMiddleware(['login']));
     }
     
  

@@ -4,7 +4,7 @@ use App\migrations\Migration;
 
 use App\core\Application;
 
-class m0001_initial_auth_tables extends Migration
+class M0001_initial_auth_tables extends Migration
 {
     public function up()
     {

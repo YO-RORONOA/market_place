@@ -42,26 +42,21 @@ class OrderController extends Controller
             return;
         }
         
-        // Get status filter from request
         $statusFilter = $request->getQuery('status') ?? '';
         
-        // Prepare conditions for the query
         $conditions = ['user_id' => $userId];
         if (!empty($statusFilter)) {
             $conditions['status'] = $statusFilter;
         }
         
-        // Get all orders for the user with filters applied
         $orders = $this->orderRepository->findAll($conditions, false, 'created_at DESC');
         
-        // Add items to each order
         foreach ($orders as &$order) {
             $order['items'] = $this->orderItemRepository->findByOrderId($order['id']);
         }
         
         $totalOrders = count($orders);
         
-        // Get available order statuses for filter dropdown
         $availableStatuses = $this->getAvailableOrderStatuses();
         
         return $this->render('orders/index', [
@@ -86,10 +81,8 @@ class OrderController extends Controller
             return;
         }
         
-        // Get status filter from request
         $statusFilter = $request->getQuery('status') ?? '';
         
-        // Prepare conditions for the query
         $conditions = ['user_id' => $userId];
         if (!empty($statusFilter)) {
             $conditions['status'] = $statusFilter;
@@ -98,7 +91,6 @@ class OrderController extends Controller
         // Get all orders for the user with filters applied
         $orders = $this->orderRepository->findAll($conditions, false, 'created_at DESC');
         
-        // Add items to each order
         foreach ($orders as &$order) {
             $order['items'] = $this->orderItemRepository->findByOrderId($order['id']);
             
@@ -106,7 +98,6 @@ class OrderController extends Controller
             $order['can_cancel'] = $this->canCancelOrder($order['status']);
         }
         
-        // Return JSON response
         header('Content-Type: application/json');
         echo json_encode([
             'orders' => $orders,
@@ -137,7 +128,6 @@ class OrderController extends Controller
             return;
         }
         
-        // Get order details
         $order = $this->orderRepository->findOne($orderId);
         
         // Verify the order belongs to the current user
@@ -147,13 +137,11 @@ class OrderController extends Controller
             return;
         }
         
-        // Get order items
         $items = $this->orderItemRepository->findByOrderId($orderId);
         
         // Check if order can be cancelled
         $canCancel = $this->canCancelOrder($order['status']);
         
-        // Calculate order progress for the timeline
         $orderProgress = $this->getOrderProgress($order['status']);
         
         return $this->render('orders/view', [
@@ -200,11 +188,9 @@ class OrderController extends Controller
         return;
     }
     
-    // Get order details
     $order = $this->orderRepository->findOne($orderId);
     error_log("Order details fetched: " . json_encode($order));
     
-    // Verify the order belongs to the current user
     if (!$order || $order['user_id'] != $userId) {
         if ($request->isXhr()) {
             http_response_code(403);
@@ -217,7 +203,6 @@ class OrderController extends Controller
         return;
     }
     
-    // Check if order can be cancelled
     if (!$this->canCancelOrder($order['status'])) {
         if ($request->isXhr()) {
             http_response_code(400);
@@ -230,12 +215,10 @@ class OrderController extends Controller
         return;
     }
     
-    // Test direct refund API call
     error_log("Testing direct refund API call");
     $testRefundResult = $this->paymentService->testRefund();
     error_log("Test refund result: " . ($testRefundResult ? 'Success' : 'Failed'));
     
-    // Process the regular cancellation
     $success = $this->processCancellation($order);
     
     if ($request->isXhr()) {
@@ -280,7 +263,6 @@ class OrderController extends Controller
     private function processCancellation(array $order): bool
     {
         try {
-            // Update order status to cancelled
             $success = $this->orderRepository->update($order['id'], [
                 'status' => 'cancelled'
             ]);
@@ -289,9 +271,7 @@ class OrderController extends Controller
                 return false;
             }
             
-            // If payment was processed, issue a refund
             if (in_array($order['status'], ['paid', 'processing']) && !empty($order['payment_intent_id'])) {
-                // Process refund through Stripe
                 $this->paymentService->processRefund($order['payment_intent_id'], $order['total_amount']);
             }
             
@@ -309,8 +289,7 @@ class OrderController extends Controller
      */
     private function getAvailableOrderStatuses(): array
     {
-        // You could fetch this from a database table if you have one,
-        // but for simplicity, we'll just return a static list
+     
         return [
             'pending' => 'Pending',
             'processing' => 'Processing',
@@ -362,7 +341,6 @@ class OrderController extends Controller
             ]
         ];
         
-        // For cancelled orders, add a cancelled step
         if ($status === 'cancelled') {
             $steps = [
                 [
