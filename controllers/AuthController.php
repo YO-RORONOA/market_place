@@ -40,19 +40,26 @@ class AuthController extends Controller
     if ($request->isPost()) {
         $loginForm->loadData($request->getBody());
         
-        if ($loginForm->validate() && $this->authService->login($loginForm->email, $loginForm->password, $loginForm->rememberMe ?? false)) {
-            Application::$app->session->setFlash('success', 'Welcome back!');
+        if ($loginForm->validate()) {
+            $user = $this->userRepository->findByEmail($loginForm->email);
             
-            // Check if there's a redirect URL set in session
-            $redirectUrl = Application::$app->session->get('redirect_after_login');
-            
-            if ($redirectUrl) {
-                Application::$app->session->remove('redirect_after_login');
-                Application::$app->response->redirect($redirectUrl);
-            } else {
-                Application::$app->response->redirect('/');
+            if ($user && $user->loadRoles() && $user->hasRole(Role::ADMIN)) {
+                $loginForm->addError('email', 'Administrators must use the admin login page');
+                Application::$app->session->setFlash('error', 'email or password is incorrect');
+            } 
+            else if ($this->authService->login($loginForm->email, $loginForm->password, $loginForm->rememberMe ?? false)) {
+                Application::$app->session->setFlash('success', 'Welcome back!');
+                
+                $redirectUrl = Application::$app->session->get('redirect_after_login');
+                
+                if ($redirectUrl) {
+                    Application::$app->session->remove('redirect_after_login');
+                    Application::$app->response->redirect($redirectUrl);
+                } else {
+                    Application::$app->response->redirect('/');
+                }
+                return;
             }
-            return;
         }
     }
     

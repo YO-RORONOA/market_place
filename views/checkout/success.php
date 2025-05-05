@@ -31,7 +31,7 @@
         </p>
         
         <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/account/orders" class="py-2 px-6 bg-accent-navy text-white font-medium rounded-md hover:bg-accent-teal transition">
+            <a href="/orders" class="py-2 px-6 bg-accent-navy text-white font-medium rounded-md hover:bg-accent-teal transition">
                 View Your Orders
             </a>
             <a href="/products" class="py-2 px-6 bg-accent-ochre text-white font-medium rounded-md hover:bg-accent-terracotta transition">

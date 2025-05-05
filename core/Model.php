@@ -13,6 +13,7 @@ abstract class Model
     public const RULE_MAX = "max";
     public const RULE_MATCH = "match";
     public const RULE_UNIQUE = "unique";
+    public const RULE_LETTERS_ONLY = "letters_only"; 
     public function loadData($data)
     {
         foreach ($data as $key => $value) {
@@ -58,6 +59,10 @@ abstract class Model
                     $this->addError($attribute,self::RULE_MATCH, $rule);
 
                 }
+                
+                if ($ruleName === self::RULE_LETTERS_ONLY && !preg_match('/^[A-Za-z\s\-\']+$/', $value)) {
+                    $this->addError($attribute, self::RULE_LETTERS_ONLY);
+                }
             }
 
     }
@@ -82,6 +87,7 @@ public function errorMessages()
     self::RULE_MIN => 'Min length of this field must be {min}',
     self::RULE_MAX => 'Min length of this field must be {max}',
     self::RULE_MATCH => 'this field must be the same as {match}',
+    self::RULE_LETTERS_ONLY => 'This field must contain only letters (no numbers or special characters)'
     ];
 
 }

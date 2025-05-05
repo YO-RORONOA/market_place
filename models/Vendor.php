@@ -34,10 +34,17 @@ class Vendor extends Dbmodal
     public function rules(): array
     {
         return [
-            'store_name' => [self::RULE_REQUIRED],
-            'description' => [self::RULE_REQUIRED],
+            'store_name' => [
+                self::RULE_REQUIRED,
+                [self::RULE_MIN, 'min' => 3],
+                [self::RULE_MAX, 'max' => 100],
+            ],
+            'description' => [
+                self::RULE_REQUIRED,
+                [self::RULE_MIN, 'min' => 10],
+                [self::RULE_MAX, 'max' => 500]
+            ],
             'status' => [self::RULE_REQUIRED]
-            // user_id will be set programmatically, so no validation is needed here
         ];
     }
 

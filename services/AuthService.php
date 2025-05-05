@@ -80,8 +80,7 @@ class AuthService
             $user->loadRoles();
             
             if ($user->hasRole(Role::VENDOR)) {
-                // Notify admin about verified vendor that needs approval
-                // $this->notifyAdminAboutVerifiedVendor($user);
+           
                 
                 Application::$app->session->setFlash('success', 'Email verified successfully! Your vendor account is now pending admin approval. You can log in to check your status.');
             } else {
@@ -131,7 +130,13 @@ class AuthService
         ]);
         
         $cartService = new \App\services\CartService();
-        // $cartService->initializeUserCart($user->id); maybe replace
+        $visitorCart = $cartService->getCart();
+        $cartService->initializeUserCart($user->id);
+        if (!empty($visitorCart)) { //check this fix in detail
+            foreach ($visitorCart as $productId => $item) {
+                $cartService->addItem($productId, $item['quantity']);
+            }
+        }
         $cartService->persistVisitorCartToUser($user->id);
         
         return true;
