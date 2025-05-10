@@ -1,5 +1,4 @@
 <?php
-// File: repositories/Repository.php (updated with error handling)
 
 namespace App\repositories;
 

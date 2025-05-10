@@ -1,5 +1,4 @@
 <?php
-// File: core/exception/ExceptionHandler.php
 
 namespace App\core\exception;
 

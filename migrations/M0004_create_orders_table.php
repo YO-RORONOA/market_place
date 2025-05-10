@@ -1,5 +1,4 @@
 <?php
-// File: migrations/M0004_create_orders_table.php
 use App\core\Application;
 use App\migrations\Migration;
 

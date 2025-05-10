@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Services;
+namespace App\services;
 
 use App\core\Application;
 use App\models\User;
 use App\models\UserStatus;
 use App\models\Role;
-use App\Repositories\UserRepository;
+use App\repositories\UserRepository;
 use App\repositories\UserRoleRepository;
-use App\Services\EmailService;
+use App\services\EmailService;
 use App\services\TokenService;
 
 class AuthService

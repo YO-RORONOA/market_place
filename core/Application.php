@@ -1,7 +1,5 @@
 <?php
-/**
- * Modified Application.php with error handling integration (admin parts removed)
- */
+
 namespace App\core;
 
 use App\core\exception\ExceptionHandler;

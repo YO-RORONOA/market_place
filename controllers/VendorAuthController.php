@@ -10,7 +10,7 @@ use App\models\User;
 use App\models\LoginForm;
 use App\models\Role;
 use App\models\Vendor;
-use App\Repositories\UserRepository;
+use App\repositories\UserRepository;
 use App\repositories\VendorRepository;
 use App\services\AuthService;
 use App\services\EmailService;
